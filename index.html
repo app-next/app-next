@@ -21,14 +21,6 @@
   <main>
     <div class="menu" id="menu">
       <a class="btn" onclick="showForm('venta')">Registrar Venta</a>
-      <a class="btn">CRM</a>
-      <a class="btn">Diseños</a>
-      <a class="btn">Stock</a>
-      <a class="btn">Compras</a>
-      <a class="btn">Finanzas</a>
-      <a class="btn">Marketing</a>
-      <a class="btn">Agenda</a>
-      <a class="btn">Reportes</a>
     </div>
 
     <div id="formularioVenta" class="hidden">
@@ -68,14 +60,18 @@
 
     function enviarVenta(event) {
       event.preventDefault();
+      const cantidad = parseFloat(document.getElementById("cantidad").value);
+      const precio = parseFloat(document.getElementById("precio").value);
+      const total = cantidad * precio;
+
       const data = {
         data: {
           fecha: new Date().toISOString().split('T')[0],
           cliente: document.getElementById("cliente").value,
           producto: document.getElementById("producto").value,
-          cantidad: document.getElementById("cantidad").value,
-          precio_unitario: document.getElementById("precio").value,
-          total: document.getElementById("cantidad").value * document.getElementById("precio").value,
+          cantidad: cantidad,
+          precio_unitario: precio,
+          total: total,
           forma_pago: document.getElementById("forma_pago").value,
           divisa: document.getElementById("divisa").value,
           asesor: document.getElementById("asesor").value,
@@ -93,7 +89,10 @@
         alert("Venta registrada con éxito");
         volverMenu();
       })
-      .catch(err => alert("Error al registrar la venta"));
+      .catch(err => {
+        console.error(err);
+        alert("Error al registrar la venta");
+      });
     }
   </script>
 </body>
