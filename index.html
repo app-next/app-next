@@ -21,6 +21,14 @@
   <main>
     <div class="menu" id="menu">
       <a class="btn" onclick="showForm('venta')">Registrar Venta</a>
+      <a class="btn">CRM</a>
+      <a class="btn">Diseños</a>
+      <a class="btn">Stock</a>
+      <a class="btn">Compras</a>
+      <a class="btn">Finanzas</a>
+      <a class="btn">Marketing</a>
+      <a class="btn">Agenda</a>
+      <a class="btn">Reportes</a>
     </div>
 
     <div id="formularioVenta" class="hidden">
@@ -39,6 +47,7 @@
         <input type="text" id="divisa" placeholder="Divisa (USD, Bs)" required>
         <input type="text" id="asesor" placeholder="Asesor" required>
         <textarea id="comentario" placeholder="Comentario"></textarea>
+        <input type="hidden" id="total">
         <button type="submit">Enviar</button>
         <button type="button" onclick="volverMenu()">Volver</button>
       </form>
@@ -63,6 +72,7 @@
       const cantidad = parseFloat(document.getElementById("cantidad").value);
       const precio = parseFloat(document.getElementById("precio").value);
       const total = cantidad * precio;
+      document.getElementById("total").value = total;
 
       const data = {
         data: {
