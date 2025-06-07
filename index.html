@@ -1,1 +1,235 @@
-Contenido ya generado en el paso anterior.
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ventas - NEXT</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      color: #000;
+    }
+    header {
+      background: #0026ff;
+      padding: 1rem;
+      text-align: center;
+    }
+    header img {
+      height: 48px;
+    }
+    main {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: #f9f9f9;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    h2 {
+      text-align: center;
+      color: #000;
+      margin-bottom: 1.5rem;
+    }
+    form, .subpanel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    input, select, textarea {
+      padding: 0.9rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.9rem;
+      background: #0026ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #001ec2;
+    }
+    .confirm {
+      text-align: center;
+      padding: 1rem;
+      background: #eaffea;
+      border: 1px solid #00b300;
+      color: #006600;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .submenu {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .visible {
+      display: flex !important;
+    }
+    .info {
+      background: #f0f0f0;
+      padding: 0.5rem;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo NEXT" />
+  </header>
+  <main>
+    <nav>
+      <button onclick="toggleSubmenu()">Ventas</button>
+      <div class="submenu" id="ventasMenu">
+        <button onclick="mostrar('formularioVenta')">Registrar venta</button>
+        <button onclick="mostrar('clientesRegistrados')">Clientes registrados</button>
+        <button onclick="mostrar('clientesDeuda')">Clientes con deudas</button>
+        <button onclick="mostrar('informeVentas')">Informe de ventas</button>
+      </div>
+    </nav>
+
+    <div id="formularioVenta">
+      <h2>Registrar Venta</h2>
+      <div id="mensaje" class="confirm" style="display:none;">✅ Venta registrada con éxito</div>
+      <form onsubmit="enviarVenta(event)">
+        <input type="text" id="cliente" placeholder="Cliente" list="clientesList" required oninput="autocompletarCliente()" />
+        <datalist id="clientesList">
+          <option value="Jesús Guevara">
+          <option value="Abdy Alvarado">
+          <option value="María Pérez">
+        </datalist>
+        <input type="text" id="telefono" placeholder="Teléfono del Cliente" required />
+        <input type="text" id="producto" placeholder="Producto" required />
+        <input type="number" id="cantidad" placeholder="Cantidad" required oninput="calcularTotal()" />
+        <input type="number" id="precio" placeholder="Precio Unitario" required oninput="calcularTotal()" />
+        <div class="info">💰 Total: <span id="totalTexto">0</span></div>
+        <input type="number" id="abono" placeholder="Abono (si aplica)" oninput="calcularRestante()" />
+        <div class="info">💸 Restante por pagar: <span id="restanteTexto">0</span></div>
+        <select id="forma_pago">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="zinli">Zinli</option>
+          <option value="usdt">USDT</option>
+        </select>
+        <input type="text" id="divisa" placeholder="Divisa (USD, Bs)" required />
+        <input type="text" id="asesor" placeholder="Asesor" required />
+        <textarea id="comentario" placeholder="Comentario"></textarea>
+        <input type="hidden" id="total" />
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+
+    <div id="clientesRegistrados" class="subpanel" style="display:none;">
+      <h2>Clientes Registrados</h2>
+      <div class="info">Jesús Guevara - +58 424-1234567</div>
+      <div class="info">Abdy Alvarado - +58 412-9876543</div>
+      <div class="info">María Pérez - +58 414-6543210</div>
+    </div>
+
+    <div id="clientesDeuda" class="subpanel" style="display:none;">
+      <h2>Clientes con Deudas</h2>
+      <p>(Funcionalidad futura basada en cálculo desde Sheets)</p>
+    </div>
+
+    <div id="informeVentas" class="subpanel" style="display:none;">
+      <h2>Informe de Ventas</h2>
+      <p>(Resumen o vinculación a Google Sheets)</p>
+    </div>
+  </main>
+
+  <script>
+    const endpoint = "https://sheetdb.io/api/v1/7merahzf5ighx";
+
+    const clientes = {
+      "Jesús Guevara": "+58 424-1234567",
+      "Abdy Alvarado": "+58 412-9876543",
+      "María Pérez": "+58 414-6543210"
+    };
+
+    function toggleSubmenu() {
+      document.getElementById("ventasMenu").classList.toggle("visible");
+    }
+
+    function mostrar(seccion) {
+      ['formularioVenta', 'clientesRegistrados', 'clientesDeuda', 'informeVentas'].forEach(id => {
+        document.getElementById(id).style.display = id === seccion ? "block" : "none";
+      });
+    }
+
+    function autocompletarCliente() {
+      const nombre = document.getElementById("cliente").value;
+      document.getElementById("telefono").value = clientes[nombre] || "";
+    }
+
+    function calcularTotal() {
+      const cantidad = parseFloat(document.getElementById("cantidad").value) || 0;
+      const precio = parseFloat(document.getElementById("precio").value) || 0;
+      const total = cantidad * precio;
+      document.getElementById("total").value = total;
+      document.getElementById("totalTexto").innerText = total.toFixed(2);
+      calcularRestante();
+    }
+
+    function calcularRestante() {
+      const total = parseFloat(document.getElementById("total").value) || 0;
+      const abono = parseFloat(document.getElementById("abono").value) || 0;
+      const restante = total - abono;
+      document.getElementById("restanteTexto").innerText = restante.toFixed(2);
+    }
+
+    function enviarVenta(event) {
+      event.preventDefault();
+      const data = {
+        data: {
+          fecha: new Date().toISOString().slice(0, 10),
+          cliente: document.getElementById("cliente").value,
+          telefono: document.getElementById("telefono").value,
+          producto: document.getElementById("producto").value,
+          cantidad: document.getElementById("cantidad").value,
+          precio_unitario: document.getElementById("precio").value,
+          total: document.getElementById("total").value,
+          abono: document.getElementById("abono").value,
+          forma_pago: document.getElementById("forma_pago").value,
+          divisa: document.getElementById("divisa").value,
+          asesor: document.getElementById("asesor").value,
+          comentario: document.getElementById("comentario").value
+        }
+      };
+      fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(() => {
+        document.querySelector("form").reset();
+        document.getElementById("totalTexto").innerText = "0";
+        document.getElementById("restanteTexto").innerText = "0";
+        document.getElementById("mensaje").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("mensaje").style.display = "none";
+        }, 3000);
+      })
+      .catch(() => {
+        alert("Error al registrar la venta");
+      });
+    }
+  </script>
+</body>
+</html>
