@@ -1,56 +1,109 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Registro de Ventas - NEXT</title>
-    <link rel="stylesheet" href="assets/styles.css">
-    <script src="assets/script.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APP NEXT</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #f2f2f2; }
+    header { background: #0d6efd; color: white; padding: 1rem; text-align: center; font-size: 1.5rem; }
+    main { padding: 1rem; }
+    .menu { display: flex; flex-direction: column; gap: 0.75rem; }
+    .btn { padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; font-weight: bold; color: #0d6efd; text-decoration: none; }
+    form { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+    input, select, textarea { padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; }
+    button { padding: 0.75rem; background: #0d6efd; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
-    <header>
-        <img src="assets/logo.png" alt="Logo NEXT" class="logo">
-        <h1>Registro de Ventas</h1>
-    </header>
-    <main>
-        <div id="form-container">
-            <form id="venta-form">
-                <input type="text" placeholder="Cliente" name="cliente" required><br>
-                <input type="text" placeholder="Teléfono" name="telefono"><br>
-                <input type="text" placeholder="Producto" name="producto"><br>
-                <input type="number" placeholder="Cantidad" name="cantidad" required><br>
-                <input type="number" placeholder="Precio unitario" name="precio_unitario" required><br>
+  <header>APP NEXT</header>
+  <main>
+    <div class="menu" id="menu">
+      <a class="btn" onclick="showForm('venta')">Registrar Venta</a>
+      <a class="btn">CRM</a>
+      <a class="btn">Diseños</a>
+      <a class="btn">Stock</a>
+      <a class="btn">Compras</a>
+      <a class="btn">Finanzas</a>
+      <a class="btn">Marketing</a>
+      <a class="btn">Agenda</a>
+      <a class="btn">Reportes</a>
+    </div>
 
-                <select name="metodo_pago_1">
-                    <option value="">Método de pago 1</option>
-                    <option value="efectivo">Efectivo $</option>
-                    <option value="bs">Bolívares (Bs)</option>
-                    <option value="zinli">Zinli</option>
-                    <option value="usdt">USDT</option>
-                </select>
-                <input type="number" placeholder="Monto pago 1" name="monto_pago_1"><br>
+    <div id="formularioVenta" class="hidden">
+      <h2>Registrar Venta</h2>
+      <form onsubmit="enviarVenta(event)">
+        <input type="text" id="cliente" placeholder="Cliente" required>
+        <input type="text" id="producto" placeholder="Producto" required>
+        <input type="number" id="cantidad" placeholder="Cantidad" required>
+        <input type="number" id="precio" placeholder="Precio Unitario" required>
+        <select id="forma_pago">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="zinli">Zinli</option>
+          <option value="usdt">USDT</option>
+        </select>
+        <input type="text" id="divisa" placeholder="Divisa (USD, Bs)" required>
+        <input type="text" id="asesor" placeholder="Asesor" required>
+        <textarea id="comentario" placeholder="Comentario"></textarea>
+        <input type="hidden" id="total">
+        <button type="submit">Enviar</button>
+        <button type="button" onclick="volverMenu()">Volver</button>
+      </form>
+    </div>
+  </main>
 
-                <select name="metodo_pago_2">
-                    <option value="">Método de pago 2 (opcional)</option>
-                    <option value="efectivo">Efectivo $</option>
-                    <option value="bs">Bolívares (Bs)</option>
-                    <option value="zinli">Zinli</option>
-                    <option value="usdt">USDT</option>
-                </select>
-                <input type="number" placeholder="Monto pago 2" name="monto_pago_2"><br>
+  <script>
+    const sheetdbEndpoint = "https://sheetdb.io/api/v1/7merahzf5ighx";
 
-                <input type="text" name="tasa_bcv" placeholder="Tasa BCV" readonly><br>
-                <input type="text" name="equivalente_usd_bs" placeholder="Equivalente USD Bs" readonly><br>
+    function showForm(tipo) {
+      document.getElementById("menu").classList.add("hidden");
+      if (tipo === 'venta') document.getElementById("formularioVenta").classList.remove("hidden");
+    }
 
-                <input type="text" name="abono" placeholder="Abono total" readonly><br>
-                <input type="text" name="restante" placeholder="Restante" readonly><br>
+    function volverMenu() {
+      document.getElementById("formularioVenta").classList.add("hidden");
+      document.getElementById("menu").classList.remove("hidden");
+    }
 
-                <input type="text" placeholder="Asesor" name="asesor"><br>
-                <textarea placeholder="Comentario" name="comentario"></textarea><br>
+    function enviarVenta(event) {
+      event.preventDefault();
+      const cantidad = parseFloat(document.getElementById("cantidad").value);
+      const precio = parseFloat(document.getElementById("precio").value);
+      const total = cantidad * precio;
+      document.getElementById("total").value = total;
 
-                <button type="submit">Registrar venta</button>
-            </form>
-        </div>
-    </main>
+      const data = {
+        data: {
+          fecha: new Date().toISOString().split('T')[0],
+          cliente: document.getElementById("cliente").value,
+          producto: document.getElementById("producto").value,
+          cantidad: cantidad,
+          precio_unitario: precio,
+          total: total,
+          forma_pago: document.getElementById("forma_pago").value,
+          divisa: document.getElementById("divisa").value,
+          asesor: document.getElementById("asesor").value,
+          comentario: document.getElementById("comentario").value
+        }
+      };
+
+      fetch(sheetdbEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert("Venta registrada con éxito");
+        volverMenu();
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error al registrar la venta");
+      });
+    }
+  </script>
 </body>
 </html>
