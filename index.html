@@ -67,14 +67,20 @@
         <label>Cantidad</label><input type="number" id="cantidad" min="1" required>
         <label>Precio Unitario</label><input type="number" id="precio" min="0.01" step="0.01" required>
         <label>Total</label><input type="number" id="total" readonly>
-        <label>Método de Pago 1</label><select id="metodo1" required>
-          <option value="Efectivo_$">Efectivo $</option><option value="BS">BS</option>
-          <option value="Zinli">Zinli</option><option value="USDT">USDT</option>
+        <label>Método de Pago 1</label>
+        <select id="metodo1" required>
+          <option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
+          <option value="USDT">USDT</option>
         </select>
         <label>Monto Pago 1</label><input type="number" id="monto1" min="0" step="0.01" required>
-        <label>Método de Pago 2 (opcional)</label><select id="metodo2">
-          <option value="">Ninguno</option><option value="Efectivo_$">Efectivo $</option>
-          <option value="BS">BS</option><option value="Zinli">Zinli</option>
+        <label>Método de Pago 2 (opcional)</label>
+        <select id="metodo2">
+          <option value="">Ninguno</option>
+          <option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
           <option value="USDT">USDT</option>
         </select>
         <label>Monto Pago 2</label><input type="number" id="monto2" min="0" step="0.01">
@@ -112,15 +118,19 @@
     async function loadData() {
       const r = await fetch(endpoint);
       ventasData = await r.json();
-      clientesData = ventasData.map(v => ({cliente:v.cliente,telefono:v.telefono}));
+      clientesData = ventasData.map(v => ({cliente:v.cliente, telefono:v.telefono}));
       populateDatalists();
     }
 
     function populateDatalists() {
       const cList = [...new Set(clientesData.map(c=>c.cliente))];
       const tList = [...new Set(clientesData.map(c=>c.telefono))];
-      document.getElementById('clientes-list').innerHTML = cList.map(x=>\`<option value="\${x}">\`).join('');
-      document.getElementById('telefonos-list').innerHTML = tList.map(x=>\`<option value="\${x}">\`).join('');
+      let htmlC = '';
+      cList.forEach(x => { htmlC += '<option value="' + x + '">'; });
+      document.getElementById('clientes-list').innerHTML = htmlC;
+      let htmlT = '';
+      tList.forEach(x => { htmlT += '<option value="' + x + '">'; });
+      document.getElementById('telefonos-list').innerHTML = htmlT;
     }
 
     function clearForm() {
@@ -149,16 +159,13 @@
     }
 
     document.getElementById('cliente').addEventListener('change', () => {
-      const sel = clientesData.find(c=>c.cliente===document.getElementById('cliente').value);
-      if(sel) document.getElementById('telefono').value = sel.telefono;
+      const sel = clientesData.find(c=>c.cliente === document.getElementById('cliente').value);
+      if (sel) document.getElementById('telefono').value = sel.telefono;
     });
 
-    ['cantidad','precio'].forEach(id=>
-      document.getElementById(id).addEventListener('input', calculateTotal)
-    );
-    ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id=>
-      document.getElementById(id).addEventListener('input', updateAbonoRestante)
-    );
+    ['cantidad','precio'].forEach(id => document.getElementById(id).addEventListener('input', calculateTotal));
+    ['metodo1','metodo2','monto1','monto2','tasa']
+      .forEach(id => document.getElementById(id).addEventListener('input', updateAbonoRestante));
 
     function calculateTotal() {
       const c = parseFloat(document.getElementById('cantidad').value)||0;
@@ -171,19 +178,19 @@
       const total = parseFloat(document.getElementById('total').value)||0;
       const tasa = parseFloat(document.getElementById('tasa').value)||0;
       let abono = 0;
-      [{met:'metodo1',amt:'monto1'},{met:'metodo2',amt:'monto2'}].forEach(o=>{
+      [{met:'metodo1',amt:'monto1'},{met:'metodo2',amt:'monto2'}].forEach(o => {
         let val = parseFloat(document.getElementById(o.amt).value)||0;
-        if(document.getElementById(o.met).value === 'BS') {
+        if (document.getElementById(o.met).value === 'BS') {
           val = tasa > 0 ? val / tasa : 0;
         }
         abono += val;
       });
-      abono = round2(abono);
-      const restante = round2(total - abono);
-      document.getElementById('abono').value = abono;
+      const ab = round2(abono);
+      const res = round2(parseFloat(document.getElementById('total').value||0) - ab);
+      document.getElementById('abono').value = ab;
       const restanteEl = document.getElementById('restante');
-      restanteEl.value = restante;
-      if (restante < 0) {
+      restanteEl.value = res;
+      if (res < 0) {
         restanteEl.classList.add('negative');
         document.getElementById('nota').textContent = 'Saldo a favor';
       } else {
@@ -194,7 +201,7 @@
 
     async function enviarVenta(ev) {
       ev.preventDefault();
-      const data = { data: {
+      const payload = { data: {
         fecha: new Date().toISOString().split('T')[0],
         cliente: document.getElementById('cliente').value,
         telefono: document.getElementById('telefono').value,
@@ -216,7 +223,7 @@
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
       if (!res.ok) {
         alert('Error al registrar la venta');
