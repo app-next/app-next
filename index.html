@@ -12,13 +12,14 @@
       --yellow: #FFD700;
       --gray-bg: #f5f5f5;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: sans-serif;
-      margin: 0;
-      padding: 0;
       background: var(--gray-bg);
       color: var(--black);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
       background: var(--black);
@@ -32,6 +33,7 @@
       object-fit: contain;
     }
     main {
+      flex: 1;
       padding: 1rem;
       max-width: 900px;
       margin: auto;
@@ -39,14 +41,14 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .menu, .submenu {
+    .menu {
       display: flex;
       gap: 0.5rem;
       margin-bottom: 1rem;
     }
-    .menu .btn, .submenu .subbtn {
+    .menu .btn {
       flex: 1;
-      min-width: 120px;
+      min-width: 100px;
       height: 40px;
       background: var(--blue);
       color: var(--white);
@@ -58,7 +60,31 @@
       align-items: center;
       justify-content: center;
     }
-    .menu .btn:hover, .submenu .subbtn:hover {
+    .menu .btn:hover {
+      background: var(--yellow);
+      color: var(--black);
+    }
+    .submenu {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      width: 200px;
+    }
+    .submenu .subbtn {
+      width: 100%;
+      height: 40px;
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .submenu .subbtn:hover {
       background: var(--yellow);
       color: var(--black);
     }
@@ -71,7 +97,6 @@
       margin: auto;
     }
     form label {
-      margin-bottom: 0.2rem;
       font-size: 0.9rem;
       font-weight: 500;
     }
@@ -81,9 +106,6 @@
       border: 1px solid #ccc;
       font-size: 1rem;
       width: 100%;
-    }
-    input[readonly] {
-      background: #eee;
     }
     .form-actions {
       display: flex;
@@ -99,19 +121,19 @@
       font-weight: bold;
       cursor: pointer;
     }
-    .form-actions .submit-btn {
+    .submit-btn {
       background: var(--blue);
       color: var(--white);
     }
-    .form-actions .submit-btn:hover {
+    .submit-btn:hover {
       background: var(--yellow);
       color: var(--black);
     }
-    .form-actions .back-btn {
+    .back-btn {
       background: #444;
       color: var(--white);
     }
-    .form-actions .back-btn:hover {
+    .back-btn:hover {
       background: var(--yellow);
       color: var(--black);
     }
@@ -132,7 +154,6 @@
     <img src="logo.png" alt="NEXT Logo" class="logo" />
   </header>
   <main>
-    <!-- Menú Principal -->
     <div id="mainMenu" class="menu">
       <button class="btn" onclick="showSection('ventasMenu')">Ventas</button>
       <button class="btn">CRM</button>
@@ -144,8 +165,6 @@
       <button class="btn">Agenda</button>
       <button class="btn">Reportes</button>
     </div>
-
-    <!-- Submenú Ventas -->
     <div id="ventasMenu" class="submenu hidden">
       <button class="subbtn" onclick="showSection('formVenta')">Registrar Venta</button>
       <button class="subbtn" onclick="showSection('clientesRegistrados')">Clientes Registrados</button>
@@ -154,29 +173,28 @@
       <button class="subbtn back-btn" onclick="showSection('mainMenu')">Volver</button>
     </div>
 
-    <!-- Formulario Registrar Venta -->
     <div id="formVenta" class="hidden">
       <h2>Registrar Venta</h2>
       <form onsubmit="enviarVenta(event)">
         <label for="cliente">Cliente</label>
-        <input list="clientes-list" id="cliente" placeholder="Nombre del cliente" required />
+        <input list="clientes-list" id="cliente" required />
         <datalist id="clientes-list"></datalist>
 
         <label for="telefono">Teléfono</label>
-        <input list="telefonos-list" id="telefono" placeholder="Número telefónico" required />
+        <input list="telefonos-list" id="telefono" required />
         <datalist id="telefonos-list"></datalist>
 
         <label for="producto">Producto</label>
-        <input type="text" id="producto" placeholder="Nombre del producto" required />
+        <input id="producto" required />
 
         <label for="cantidad">Cantidad</label>
-        <input type="number" id="cantidad" placeholder="Cantidad" min="1" required />
+        <input type="number" id="cantidad" min="1" required />
 
         <label for="precio">Precio Unitario</label>
-        <input type="number" id="precio" placeholder="Precio unitario" min="0.01" step="0.01" required />
+        <input type="number" id="precio" min="0.01" step="0.01" required />
 
         <label for="total">Total</label>
-        <input type="number" id="total" readonly placeholder="Total calculado" />
+        <input type="number" id="total" readonly />
 
         <label for="metodo1">Método de Pago 1</label>
         <select id="metodo1" required>
@@ -187,7 +205,7 @@
         </select>
 
         <label for="monto1">Monto Pago 1</label>
-        <input type="number" id="monto1" placeholder="0.00" min="0" step="0.01" required />
+        <input type="number" id="monto1" min="0" step="0.01" required />
 
         <label for="metodo2">Método de Pago 2 (opcional)</label>
         <select id="metodo2">
@@ -199,22 +217,22 @@
         </select>
 
         <label for="monto2">Monto Pago 2</label>
-        <input type="number" id="monto2" placeholder="0.00" min="0" step="0.01" />
+        <input type="number" id="monto2" min="0" step="0.01" />
 
-        <label for="tasa">Tasa BCV (para BS)</label>
-        <input type="number" id="tasa" readonly placeholder="Cargando..." />
+        <label for="tasa">Tasa BCV (ingresar manualmente)</label>
+        <input type="number" id="tasa" min="0" step="0.01" />
 
         <label for="abono">Abono Total (USD)</label>
-        <input type="number" id="abono" readonly placeholder="0.00" />
+        <input type="number" id="abono" readonly />
 
         <label for="restante">Restante (USD)</label>
-        <input type="number" id="restante" readonly placeholder="0.00" />
+        <input type="number" id="restante" readonly />
 
         <label for="asesor">Asesor</label>
-        <input type="text" id="asesor" placeholder="Nombre del asesor" required />
+        <input id="asesor" required />
 
         <label for="comentario">Comentarios</label>
-        <textarea id="comentario" rows="3" placeholder="Comentarios adicionales"></textarea>
+        <textarea id="comentario" rows="3"></textarea>
 
         <div class="form-actions">
           <button type="button" class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
@@ -223,7 +241,6 @@
       </form>
     </div>
 
-    <!-- Clientes Registrados -->
     <div id="clientesRegistrados" class="hidden">
       <h2>Clientes Registrados</h2>
       <div id="tablaClientes"></div>
@@ -232,7 +249,6 @@
       </div>
     </div>
 
-    <!-- Clientes con Deudas -->
     <div id="clientesDeuda" class="hidden">
       <h2>Clientes con Deudas</h2>
       <div id="tablaDeudas"></div>
@@ -241,7 +257,6 @@
       </div>
     </div>
 
-    <!-- Informe de Ventas -->
     <div id="informeVentas" class="hidden">
       <h2>Informe de Ventas</h2>
       <div id="tablaVentas"></div>
@@ -252,13 +267,13 @@
   </main>
 
   <script>
-    const sheetdbEndpoint = 'https://sheetdb.io/api/v1/7merahzf5ighx';
-    let ventasData = [], clientesData = [], latestRate = 0;
+    const endpoint = 'https://sheetdb.io/api/v1/7merahzf5ighx';
+    let ventasData = [], clientesData = [];
 
     function showSection(id) {
       document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
-      if (id === 'formVenta') fetchTasa();
+      if (id === 'formVenta') calculateTotal();
       if (id === 'clientesRegistrados') renderClientes();
       if (id === 'clientesDeuda') renderDeudas();
       if (id === 'informeVentas') renderInforme();
@@ -266,64 +281,48 @@
 
     async function loadData() {
       try {
-        const res = await fetch(sheetdbEndpoint);
-        ventasData = await res.json();
+        const r = await fetch(endpoint);
+        ventasData = await r.json();
         clientesData = ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
         populateDatalists();
-      } catch(e) { console.error(e); }
+      } catch(e){console.error(e);}
     }
 
     function populateDatalists(){
-      const ulC = [...new Set(clientesData.map(c=>c.cliente))];
-      const ulT = [...new Set(clientesData.map(c=>c.telefono))];
-      document.getElementById('clientes-list').innerHTML = ulC.map(n=>`<option value="${n}">`).join('');
-      document.getElementById('telefonos-list').innerHTML = ulT.map(t=>`<option value="${t}">`).join('');
+      const cList = [...new Set(clientesData.map(c=>c.cliente))];
+      const tList = [...new Set(clientesData.map(c=>c.telefono))];
+      document.getElementById('clientes-list').innerHTML = cList.map(x=>`<option value="${x}">`).join('');
+      document.getElementById('telefonos-list').innerHTML = tList.map(x=>`<option value="${x}">`).join('');
     }
     document.getElementById('cliente').addEventListener('change', ()=>{
       const sel = clientesData.find(c=>c.cliente===document.getElementById('cliente').value);
-      if (sel) document.getElementById('telefono').value = sel.telefono;
+      if(sel) document.getElementById('telefono').value = sel.telefono;
     });
 
-    function updateTotal(){
+    function calculateTotal(){
       const c = parseFloat(document.getElementById('cantidad').value)||0;
       const p = parseFloat(document.getElementById('precio').value)||0;
       document.getElementById('total').value = (c*p).toFixed(2);
-      updateValores();
+      updateAbonoRestante();
     }
 
-    async function fetchTasa(){
-      document.getElementById('tasa').placeholder = 'Cargando...';
-      try {
-        const r = await fetch('https://s3.amazonaws.com/dolartoday/data.json');
-        const j = await r.json();
-        const rate = j.USD.promedio_real || j.USD.transferencia;
-        latestRate = parseFloat(rate);
-        document.getElementById('tasa').value = latestRate.toFixed(2);
-      } catch(e) {
-        console.error(e);
-        document.getElementById('tasa').placeholder = 'Error';
-      }
-      updateValores();
-    }
-
-    ['metodo1','metodo2'].forEach(id=>{
-      document.getElementById(id).addEventListener('change', updateValores);
-    });
-    ['cantidad','precio','monto1','monto2'].forEach(id=>{
-      document.getElementById(id).addEventListener('input',
-        id==='cantidad'||id==='precio' ? updateTotal : updateValores
-      );
+    ['cantidad','precio'].forEach(id=>{
+      document.getElementById(id).addEventListener('input', calculateTotal);
     });
 
-    function updateValores(){
+    ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id=>{
+      document.getElementById(id).addEventListener('input', updateAbonoRestante);
+    });
+
+    function updateAbonoRestante(){
       const total = parseFloat(document.getElementById('total').value)||0;
-      const tasa = latestRate;
-      let abonoUsd=0;
+      const tasa = parseFloat(document.getElementById('tasa').value)||0;
+      let abonoUsd = 0;
       [
-        {met:document.getElementById('metodo1').value,val:parseFloat(document.getElementById('monto1').value)||0},
-        {met:document.getElementById('metodo2').value,val:parseFloat(document.getElementById('monto2').value)||0}
+        {met:document.getElementById('metodo1').value, val:parseFloat(document.getElementById('monto1').value)||0},
+        {met:document.getElementById('metodo2').value, val:parseFloat(document.getElementById('monto2').value)||0}
       ].forEach(p=>{
-        abonoUsd += p.met==='BS' && tasa>0 ? p.val/tasa : p.val;
+        abonoUsd += (p.met==='BS' && tasa>0) ? p.val/tasa : p.val;
       });
       document.getElementById('abono').value = abonoUsd.toFixed(2);
       document.getElementById('restante').value = (total - abonoUsd).toFixed(2);
@@ -331,40 +330,37 @@
 
     async function enviarVenta(ev){
       ev.preventDefault();
-      const tasa = latestRate;
-      let eqUsdBs=0;
-      [{id:'metodo1',amt:'monto1'},{id:'metodo2',amt:'monto2'}].forEach(o=>{
-        const met = document.getElementById(o.id).value;
-        const val = parseFloat(document.getElementById(o.amt).value)||0;
-        if(met==='BS' && tasa>0) eqUsdBs += val/tasa;
-      });
       const abono = parseFloat(document.getElementById('abono').value)||0;
-      const payload = { data: {
-        fecha:new Date().toISOString().split('T')[0],
-        cliente:document.getElementById('cliente').value,
-        telefono:document.getElementById('telefono').value,
-        producto:document.getElementById('producto').value,
-        cantidad:parseFloat(document.getElementById('cantidad').value),
-        precio_unitario:parseFloat(document.getElementById('precio').value),
-        total:parseFloat(document.getElementById('total').value),
-        metodo_pago_1:document.getElementById('metodo1').value,
-        monto_pago_1:parseFloat(document.getElementById('monto1').value)||0,
-        metodo_pago_2:document.getElementById('metodo2').value||'',
-        monto_pago_2:parseFloat(document.getElementById('monto2').value)||0,
-        tasa_bcv:tasa,
-        equivalente_usd_bs:parseFloat(eqUsdBs.toFixed(2)),
-        abono:abono,
-        restante:parseFloat(document.getElementById('restante').value),
-        asesor:document.getElementById('asesor').value,
-        comentario:document.getElementById('comentario').value
-      }};
+      const tasa = parseFloat(document.getElementById('tasa').value)||0;
+      const eqUsdBs = parseFloat((parseFloat(document.getElementById('monto2').value)||0)*( (document.getElementById('metodo2').value==='BS'&&tasa>0)?1/tasa:0 ).toFixed(2)) || 0;
+      const data = {
+        data: {
+          fecha:new Date().toISOString().split('T')[0],
+          cliente:document.getElementById('cliente').value,
+          telefono:document.getElementById('telefono').value,
+          producto:document.getElementById('producto').value,
+          cantidad:parseFloat(document.getElementById('cantidad').value),
+          precio_unitario:parseFloat(document.getElementById('precio').value),
+          total:parseFloat(document.getElementById('total').value),
+          metodo_pago_1:document.getElementById('metodo1').value,
+          monto_pago_1:parseFloat(document.getElementById('monto1').value)||0,
+          metodo_pago_2:document.getElementById('metodo2').value||'',
+          monto_pago_2:parseFloat(document.getElementById('monto2').value)||0,
+          tasa_bcv:tasa,
+          equivalente_usd_bs:eqUsdBs,
+          abono:abono,
+          restante:parseFloat(document.getElementById('restante').value),
+          asesor:document.getElementById('asesor').value,
+          comentario:document.getElementById('comentario').value
+        }
+      };
       try {
-        const res = await fetch(sheetdbEndpoint, {
+        const r = await fetch(endpoint,{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(payload)
+          body:JSON.stringify(data)
         });
-        if(!res.ok) throw new Error('HTTP '+res.status);
+        if(!r.ok) throw new Error('HTTP '+r.status);
         alert('Venta registrada con éxito');
         await loadData();
         showSection('ventasMenu');
@@ -377,11 +373,10 @@
     function renderClientes(){
       const uniq=[];
       ventasData.forEach(v=>{
-        if(!uniq.find(u=>u.cliente===v.cliente))
-          uniq.push({cliente:v.cliente,telefono:v.telefono});
+        if(!uniq.find(u=>u.cliente===v.cliente)) uniq.push(v);
       });
       let html='<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
-      uniq.forEach(c=>html+=`<tr><td>${c.cliente}</td><td>${c.telefono}</td></tr>`);
+      uniq.forEach(u=>html+=`<tr><td>${u.cliente}</td><td>${u.telefono}</td></tr>`);
       html+='</table>';
       document.getElementById('tablaClientes').innerHTML=html;
     }
@@ -394,14 +389,12 @@
     }
     function renderInforme(){
       let html='<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
-      ventasData.forEach(v=>{
-        html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2||''}</td><td>${v.monto_pago_2||''}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;
-      });
+      ventasData.forEach(v=>html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2||''}</td><td>${v.monto_pago_2||''}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`);
       html+='</table>';
       document.getElementById('tablaVentas').innerHTML=html;
     }
 
-    window.addEventListener('DOMContentLoaded', ()=> {
+    window.addEventListener('DOMContentLoaded', ()=>{
       loadData();
     });
   </script>
