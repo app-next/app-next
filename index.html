@@ -221,5 +221,77 @@ function enviarVenta(event) {
 }
 </script>
 
+
+<style>
+.seccion-box {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin: 30px auto;
+  max-width: 400px;
+  text-align: left;
+}
+.seccion-box h3 {
+  margin-top: 0;
+}
+.volver-btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 8px 14px;
+  background-color: #333;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.volver-btn:hover {
+  background-color: #111;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const ventasData = [
+    { cliente: "Ana Pérez", telefono: "04141234567", abono: "10", restante: "0", total: "10" },
+    { cliente: "Luis Gómez", telefono: "04149876543", abono: "5", restante: "5", total: "10" },
+    { cliente: "Carlos Ruiz", telefono: "04141230011", abono: "0", restante: "15", total: "15" }
+  ];
+
+  function volverBtnHTML() {
+    return '<a href="#" class="volver-btn" onclick="showSection(\'ventasMenu\')">Volver</a>';
+  }
+
+  document.querySelector('[data-section="clientesRegistrados"]').addEventListener("click", () => {
+    const lista = document.getElementById("clientesRegistrados");
+    lista.innerHTML = `<div class="seccion-box">
+      <h3>Clientes Registrados</h3>
+      ${ventasData.map(v => `<p><strong>${v.cliente}</strong> - ${v.telefono}</p>`).join("")}
+      ${volverBtnHTML()}
+    </div>`;
+  });
+
+  document.querySelector('[data-section="clientesDeuda"]').addEventListener("click", () => {
+    const lista = document.getElementById("clientesDeuda");
+    const deudores = ventasData.filter(v => parseFloat(v.restante) > 0);
+    lista.innerHTML = `<div class="seccion-box">
+      <h3>Clientes con Deuda</h3>
+      ${deudores.map(v => `<p><strong>${v.cliente}</strong> - Deuda: $${v.restante}</p>`).join("")}
+      ${volverBtnHTML()}
+    </div>`;
+  });
+
+  document.querySelector('[data-section="informeVentas"]').addEventListener("click", () => {
+    const lista = document.getElementById("informeVentas");
+    const totalVentas = ventasData.reduce((sum, v) => sum + parseFloat(v.total), 0);
+    lista.innerHTML = `<div class="seccion-box">
+      <h3>Informe de Ventas</h3>
+      <p>Total vendido: $${totalVentas.toFixed(2)}</p>
+      ${volverBtnHTML()}
+    </div>`;
+  });
+});
+</script>
+
 </body>
 </html>
