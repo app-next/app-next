@@ -30,6 +30,37 @@
     table{width:100%;border-collapse:collapse;margin-top:1rem;}
     th,td{border:1px solid #ccc;padding:0.5rem;text-align:left;}
   </style>
+
+<style>
+.pago-box {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  background-color: #f0f6ff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+.pago-box .pago-col {
+  flex: 1 1 48%;
+  display: flex;
+  flex-direction: column;
+}
+.pago-box .pago-col label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.pago-box .pago-col input,
+.pago-box .pago-col select {
+  padding: 6px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #eaf2fa;
+}
+</style>
+
 </head>
 <body>
 <header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
@@ -198,27 +229,38 @@ function renderInforme(){let html='<table><tr><th>Fecha</th><th>Cliente</th><th>
 </script>
 
 <script>
-function enviarVenta(event) {
-  event.preventDefault(); // Detener el envío normal del formulario
+document.addEventListener('DOMContentLoaded', () => {
+  // Simular datos de ventas
+  const ventasData = [
+    { cliente: "Ana Pérez", telefono: "04141234567", abono: "10", restante: "0", total: "10" },
+    { cliente: "Luis Gómez", telefono: "04149876543", abono: "5", restante: "5", total: "10" },
+    { cliente: "Carlos Ruiz", telefono: "04141230011", abono: "0", restante: "15", total: "15" }
+  ];
 
-  const monto2 = document.getElementById('monto2').value.trim();
-  const metodo2 = document.getElementById('metodo2').value.trim().toLowerCase();
+  document.querySelector('[data-section="clientesRegistrados"]').addEventListener("click", () => {
+    const lista = document.getElementById("clientesRegistrados");
+    lista.innerHTML = "<h3>Clientes Registrados</h3>" + ventasData.map(v => `
+      <p><strong>${v.cliente}</strong> - ${v.telefono}</p>
+    `).join("");
+  });
 
-  if (monto2 !== '' && (metodo2 === '' || metodo2 === 'ninguno')) {
-    alert('Por favor, selecciona el método de pago 2 si has ingresado un monto en Pago 2.');
-    return false;
-  }
+  document.querySelector('[data-section="clientesDeuda"]').addEventListener("click", () => {
+    const lista = document.getElementById("clientesDeuda");
+    const deudores = ventasData.filter(v => parseFloat(v.restante) > 0);
+    lista.innerHTML = "<h3>Clientes con Deuda</h3>" + deudores.map(v => `
+      <p><strong>${v.cliente}</strong> - Deuda: $${v.restante}</p>
+    `).join("");
+  });
 
-  // Aquí simulas el envío (puedes conectar con SheetDB luego si quieres)
-  console.log("Simulación de venta registrada correctamente");
-  alert("Venta registrada con éxito (simulada)");
-
-  // Limpiar formulario y regresar a submenú (simulación)
-  document.getElementById('ventaForm').reset();
-  document.querySelector('[data-section="ventasMenu"]').click();
-
-  return false;
-}
+  document.querySelector('[data-section="informeVentas"]').addEventListener("click", () => {
+    const lista = document.getElementById("informeVentas");
+    const totalVentas = ventasData.reduce((sum, v) => sum + parseFloat(v.total), 0);
+    lista.innerHTML = `
+      <h3>Informe de Ventas</h3>
+      <p>Total vendido: $${totalVentas.toFixed(2)}</p>
+    `;
+  });
+});
 </script>
 
 </body>
