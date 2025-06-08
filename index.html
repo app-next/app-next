@@ -10,39 +10,53 @@
       --white: #fff;
       --blue: #0033A0;
       --yellow: #FFD700;
+      --gray-bg: #f5f5f5;
     }
     * { box-sizing: border-box; }
     body {
       font-family: sans-serif;
       margin: 0;
       padding: 0;
-      background: var(--white);
+      background: var(--gray-bg);
       color: var(--black);
     }
     header {
       background: var(--black);
       color: var(--white);
-      padding: 0.75rem 1rem;
+      height: 60px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 1rem;
+      padding: 0 1rem;
     }
     header .logo {
       height: 40px;
       object-fit: contain;
     }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      flex-grow: 1;
+      text-align: center;
+    }
     main {
       padding: 1rem;
+      max-width: 900px;
+      margin: auto;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .menu, .submenu {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 0.75rem;
       margin-bottom: 1rem;
     }
     .btn, .subbtn, button {
-      padding: 0.75rem 1rem;
+      width: 140px;
+      height: 40px;
+      padding: 0;
       background: var(--blue);
       color: var(--white);
       border: none;
@@ -50,7 +64,10 @@
       text-decoration: none;
       font-weight: bold;
       cursor: pointer;
-      text-align: center;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn:hover, .subbtn:hover, button:hover {
       background: var(--yellow);
@@ -61,7 +78,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      max-width: 400px;
+      max-width: 500px;
       margin: auto;
     }
     input, select, textarea {
@@ -95,7 +112,7 @@
 <body>
   <header>
     <img src="logo.png" alt="NEXT Logo" class="logo" />
-    APP NEXT
+    <h1>APP NEXT</h1>
   </header>
   <main>
     <!-- Menú Principal -->
@@ -170,10 +187,10 @@
         <label>Tasa BCV (solo BS):</label>
         <input type="number" id="tasa" readonly placeholder="Tasa BCV" />
 
-        <label>Abono Total:</label>
-        <input type="number" id="abono" readonly placeholder="Suma de pagos" />
+        <label>Abono Total (USD):</label>
+        <input type="number" id="abono" readonly placeholder="Equiv. USD" />
 
-        <label>Restante:</label>
+        <label>Restante (USD):</label>
         <input type="number" id="restante" readonly placeholder="Monto restante" />
 
         <label>Asesor:</label>
@@ -211,180 +228,135 @@
 
   <script>
     const sheetdbEndpoint = 'https://sheetdb.io/api/v1/7merahzf5ighx';
-    let ventasData = [];
-    let clientesData = [];
+    let ventasData = [], clientesData = [];
 
-    // Mostrar/Ocultar secciones
     function showSection(id) {
       document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
-      if (id === 'clientesRegistrados') renderClientes();
-      if (id === 'clientesDeuda') renderDeudas();
-      if (id === 'informeVentas') renderInforme();
+      if (id==='clientesRegistrados') renderClientes();
+      if (id==='clientesDeuda') renderDeudas();
+      if (id==='informeVentas') renderInforme();
     }
 
-    // Cargar datos iniciales
     async function loadData() {
       try {
         const res = await fetch(sheetdbEndpoint);
         ventasData = await res.json();
-        clientesData = ventasData.map(v => ({ cliente: v.cliente, telefono: v.telefono }));
+        clientesData = ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
         populateDatalists();
-      } catch(e) {
-        console.error('Error cargando datos:', e);
-      }
+      } catch(e){console.error(e);}
     }
 
-    // Autocomplete
-    function populateDatalists() {
-      const uniqueClientes = [...new Set(clientesData.map(c => c.cliente))];
-      const uniqueTels = [...new Set(clientesData.map(c => c.telefono))];
-      document.getElementById('clientes-list').innerHTML = uniqueClientes.map(n => `<option value="${n}">`).join('');
-      document.getElementById('telefonos-list').innerHTML = uniqueTels.map(t => `<option value="${t}">`).join('');
+    function populateDatalists(){
+      const ulC=[...new Set(clientesData.map(c=>c.cliente))];
+      const ulT=[...new Set(clientesData.map(c=>c.telefono))];
+      document.getElementById('clientes-list').innerHTML=ulC.map(n=>`<option value="${n}">`).join('');
+      document.getElementById('telefonos-list').innerHTML=ulT.map(t=>`<option value="${t}">`).join('');
     }
-    document.getElementById('cliente').addEventListener('change', () => {
-      const sel = clientesData.find(c => c.cliente === document.getElementById('cliente').value);
-      if (sel) document.getElementById('telefono').value = sel.telefono;
+    document.getElementById('cliente').addEventListener('change',()=>{
+      const sel=clientesData.find(c=>c.cliente===document.getElementById('cliente').value);
+      if(sel)document.getElementById('telefono').value=sel.telefono;
     });
 
-    // Cálculos
-    function updateTotal() {
-      const c = parseFloat(document.getElementById('cantidad').value) || 0;
-      const p = parseFloat(document.getElementById('precio').value) || 0;
-      document.getElementById('total').value = (c * p).toFixed(2);
+    function updateTotal(){
+      const c=parseFloat(document.getElementById('cantidad').value)||0;
+      const p=parseFloat(document.getElementById('precio').value)||0;
+      document.getElementById('total').value=(c*p).toFixed(2);
       updateValores();
     }
-    function fetchTasa() {
-      fetch('https://s3.amazonaws.com/dolartoday/data.json')
-        .then(r => r.json())
-        .then(json => {
-          const rate = json.USD.promedio_real || json.USD.transferencia;
-          document.getElementById('tasa').value = parseFloat(rate).toFixed(2);
-          updateValores();
-        })
-        .catch(console.error);
+    async function fetchTasa(){
+      try{
+        const r=await fetch('https://s3.amazonaws.com/dolartoday/data.json');
+        const j=await r.json();
+        const rate=j.USD.promedio_real||j.USD.transferencia;
+        document.getElementById('tasa').value=parseFloat(rate).toFixed(2);
+        updateValores();
+      }catch(e){console.error(e);}
     }
-    document.getElementById('metodo1').addEventListener('change', e => {
-      if (e.target.value === 'BS') fetchTasa();
-      else { document.getElementById('tasa').value = ''; updateValores(); }
-    });
-    document.getElementById('monto1').addEventListener('input', updateValores);
-    document.getElementById('metodo2').addEventListener('change', e => {
-      if (e.target.value === 'BS') fetchTasa();
-      else { document.getElementById('tasa').value = ''; updateValores(); }
-    });
-    document.getElementById('monto2').addEventListener('input', updateValores);
-    document.getElementById('cantidad').addEventListener('input', updateTotal);
-    document.getElementById('precio').addEventListener('input', updateTotal);
-
-    function updateValores() {
-      const montos = [
-        { met: document.getElementById('metodo1').value, val: parseFloat(document.getElementById('monto1').value) || 0 },
-        { met: document.getElementById('metodo2').value, val: parseFloat(document.getElementById('monto2').value) || 0 }
-      ];
-      const tasa = parseFloat(document.getElementById('tasa').value) || 0;
-      const abonoTotal = montos[0].val + montos[1].val;
-      let eqUsdBs = 0;
-      montos.forEach(m => {
-        if (m.met === 'BS' && tasa > 0) eqUsdBs += m.val / tasa;
+    ['metodo1','metodo2'].forEach(id=>{
+      document.getElementById(id).addEventListener('change',e=>{
+        if(e.target.value==='BS') fetchTasa(); else {document.getElementById('tasa').value=''; updateValores();}
       });
-      document.getElementById('abono').value = abonoTotal.toFixed(2);
-      document.getElementById('restante').value = (parseFloat(document.getElementById('total').value) - abonoTotal).toFixed(2);
-      // You could display eqUsdBs if needed; currently just used in data
+    });
+    ['cantidad','precio','monto1','monto2'].forEach(id=>{
+      document.getElementById(id).addEventListener('input', id==='cantidad'||id==='precio'?updateTotal:updateValores);
+    });
+
+    function updateValores(){
+      const total=parseFloat(document.getElementById('total').value)||0;
+      const tasa=parseFloat(document.getElementById('tasa').value)||0;
+      let abonoUsd=0;
+      const pagos=[
+        {met:document.getElementById('metodo1').value,val:parseFloat(document.getElementById('monto1').value)||0},
+        {met:document.getElementById('metodo2').value,val:parseFloat(document.getElementById('monto2').value)||0}
+      ];
+      pagos.forEach(p=>{
+        if(p.met==='BS'&&tasa>0) abonoUsd+=p.val/tasa;
+        else abonoUsd+=p.val;
+      });
+      document.getElementById('abono').value=abonoUsd.toFixed(2);
+      document.getElementById('restante').value=(total-abonoUsd).toFixed(2);
     }
 
-    // Enviar a Sheets
-    async function enviarVenta(ev) {
+    async function enviarVenta(ev){
       ev.preventDefault();
-      const monto1 = parseFloat(document.getElementById('monto1').value) || 0;
-      const monto2 = parseFloat(document.getElementById('monto2').value) || 0;
-      const tasa = parseFloat(document.getElementById('tasa').value) || 0;
-      let eqUsdBs = 0;
-      [ { met: document.getElementById('metodo1').value, val: monto1 },
-        { met: document.getElementById('metodo2').value, val: monto2 }
-      ].forEach(m => { if (m.met === 'BS' && tasa>0) eqUsdBs += m.val / tasa; });
-      const dataToSend = {
-        data: {
-          fecha: new Date().toISOString().split('T')[0],
-          cliente: document.getElementById('cliente').value,
-          telefono: document.getElementById('telefono').value,
-          producto: document.getElementById('producto').value,
-          cantidad: parseFloat(document.getElementById('cantidad').value),
-          precio_unitario: parseFloat(document.getElementById('precio').value),
-          total: parseFloat(document.getElementById('total').value),
-          metodo_pago_1: document.getElementById('metodo1').value,
-          monto_pago_1: monto1,
-          metodo_pago_2: document.getElementById('metodo2').value || '',
-          monto_pago_2: monto2,
-          tasa_bcv: tasa,
-          equivalente_usd_bs: parseFloat(eqUsdBs.toFixed(2)),
-          abono: monto1 + monto2,
-          restante: parseFloat(document.getElementById('restante').value),
-          asesor: document.getElementById('asesor').value,
-          comentario: document.getElementById('comentario').value
+      const tasa=parseFloat(document.getElementById('tasa').value)||0;
+      let eqUsdBs=0;
+      ['metodo1','metodo2'].forEach((id,idx)=>{
+        const met=document.getElementById(id).value;
+        const val=parseFloat(document.getElementById('monto'+(idx+1)).value)||0;
+        if(met==='BS'&&tasa>0) eqUsdBs+=val/tasa;
+      });
+      const abono=parseFloat(document.getElementById('abono').value)||0;
+      const body={
+        data:{
+          fecha:new Date().toISOString().split('T')[0],
+          cliente:document.getElementById('cliente').value,
+          telefono:document.getElementById('telefono').value,
+          producto:document.getElementById('producto').value,
+          cantidad:parseFloat(document.getElementById('cantidad').value),
+          precio_unitario:parseFloat(document.getElementById('precio').value),
+          total:parseFloat(document.getElementById('total').value),
+          metodo_pago_1:document.getElementById('metodo1').value,
+          monto_pago_1:parseFloat(document.getElementById('monto1').value)||0,
+          metodo_pago_2:document.getElementById('metodo2').value||'',
+          monto_pago_2:parseFloat(document.getElementById('monto2').value)||0,
+          tasa_bcv:tasa,
+          equivalente_usd_bs:parseFloat(eqUsdBs.toFixed(2)),
+          abono:abono,
+          restante:parseFloat(document.getElementById('restante').value),
+          asesor:document.getElementById('asesor').value,
+          comentario:document.getElementById('comentario').value
         }
       };
-      try {
-        const res = await fetch(sheetdbEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataToSend)
-        });
-        if (!res.ok) throw new Error('Error HTTP ' + res.status);
+      try{
+        const res=await fetch(sheetdbEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(!res.ok) throw new Error('HTTP '+res.status);
         alert('Venta registrada con éxito');
         await loadData();
         showSection('ventasMenu');
-      } catch(err) {
-        console.error(err);
-        alert('Error al registrar la venta');
-      }
+      }catch(e){console.error(e);alert('Error al registrar la venta');}
     }
 
-    // Tablas
-    function renderClientes() {
-      const unique = [];
-      ventasData.forEach(v => {
-        if (!unique.find(u => u.cliente === v.cliente)) {
-          unique.push({ cliente: v.cliente, telefono: v.telefono });
-        }
-      });
-      let html = '<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
-      unique.forEach(c => html += `<tr><td>${c.cliente}</td><td>${c.telefono}</td></tr>`);
-      html += '</table>';
-      document.getElementById('tablaClientes').innerHTML = html;
+    function renderClientes(){ /* unchanged */ 
+      const unique=[]; ventasData.forEach(v=>{ if(!unique.find(u=>u.cliente===v.cliente)) unique.push({cliente:v.cliente,telefono:v.telefono}); });
+      let html='<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
+      unique.forEach(c=>html+=`<tr><td>${c.cliente}</td><td>${c.telefono}</td></tr>`);
+      html+='</table>'; document.getElementById('tablaClientes').innerHTML=html;
     }
-    function renderDeudas() {
-      const conDeuda = ventasData.filter(v => parseFloat(v.restante) > 0);
-      let html = '<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>';
-      conDeuda.forEach(v => html += `<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`);
-      html += '</table>';
-      document.getElementById('tablaDeudas').innerHTML = html;
+    function renderDeudas(){ 
+      const con=ventasData.filter(v=>parseFloat(v.restante)>0);
+      let html='<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>'; 
+      con.forEach(v=>html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`);
+      html+='</table>'; document.getElementById('tablaDeudas').innerHTML=html;
     }
-    function renderInforme() {
-      let html = '<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>Pago1</th><th>Monto1</th><th>Pago2</th><th>Monto2</th><th>Tasa</th><th>Eq USD</th><th>Abono</th><th>Restante</th></tr>';
-      ventasData.forEach(v => {
-        html += `<tr>
-          <td>${v.fecha}</td>
-          <td>${v.cliente}</td>
-          <td>${v.producto}</td>
-          <td>${v.cantidad}</td>
-          <td>${v.precio_unitario}</td>
-          <td>${v.total}</td>
-          <td>${v.metodo_pago_1}</td>
-          <td>${v.monto_pago_1}</td>
-          <td>${v.metodo_pago_2 || ''}</td>
-          <td>${v.monto_pago_2 || ''}</td>
-          <td>${v.tasa_bcv}</td>
-          <td>${v.equivalente_usd_bs}</td>
-          <td>${v.abono}</td>
-          <td>${v.restante}</td>
-        </tr>`;
-      });
-      html += '</table>';
-      document.getElementById('tablaVentas').innerHTML = html;
+    function renderInforme(){
+      let html='<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
+      ventasData.forEach(v=>{ html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2||''}</td><td>${v.monto_pago_2||''}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`; });
+      html+='</table>'; document.getElementById('tablaVentas').innerHTML=html;
     }
 
-    window.addEventListener('DOMContentLoaded', () => { loadData(); });
+    window.addEventListener('DOMContentLoaded',()=>{ loadData(); });
   </script>
 </body>
 </html>
