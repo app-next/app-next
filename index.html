@@ -2,16 +2,12 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APP NEXT</title>
   <style>
     :root {
-      --black: #000;
-      --white: #fff;
-      --blue: #0033A0;
-      --yellow: #FFD700;
-      --gray-bg: #f5f5f5;
-      --red: #E63946;
+      --black: #000; --white: #fff; --blue: #0033A0; --yellow: #FFD700;
+      --gray-bg: #f5f5f5; --red: #E63946;
     }
     * { box-sizing:border-box; margin:0; padding:0; }
     body { font-family:sans-serif; background:var(--gray-bg); display:flex; flex-direction:column; min-height:100vh; }
@@ -41,9 +37,7 @@
   </style>
 </head>
 <body>
-  <header>
-    <img src="logo.png" alt="NEXT Logo" class="logo">
-  </header>
+  <header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
   <main>
     <div id="mainMenu" class="menu">
       <button class="btn" onclick="showSection('ventasMenu')">Ventas</button>
@@ -66,33 +60,27 @@
 
     <div id="formVenta" class="hidden">
       <h2>Registrar Venta</h2>
-      <form onsubmit="return enviarVenta(event)">
+      <form id="ventaForm" onsubmit="return enviarVenta(event)">
         <label>Cliente</label><input list="clientes-list" id="cliente" required><datalist id="clientes-list"></datalist>
         <label>Teléfono</label><input list="telefonos-list" id="telefono" required><datalist id="telefonos-list"></datalist>
         <label>Producto</label><input id="producto" required>
         <label>Cantidad</label><input type="number" id="cantidad" min="1" required>
         <label>Precio Unitario</label><input type="number" id="precio" min="0.01" step="0.01" required>
         <label>Total</label><input type="number" id="total" readonly>
-        <label>Método de Pago 1</label>
-        <select id="metodo1" required>
-          <option value="Efectivo_$">Efectivo $</option>
-          <option value="BS">BS</option>
-          <option value="Zinli">Zinli</option>
-          <option value="USDT">USDT</option>
+        <label>Método de Pago 1</label><select id="metodo1" required>
+          <option value="Efectivo_$">Efectivo $</option><option value="BS">BS</option>
+          <option value="Zinli">Zinli</option><option value="USDT">USDT</option>
         </select>
         <label>Monto Pago 1</label><input type="number" id="monto1" min="0" step="0.01" required>
-        <label>Método de Pago 2 (opcional)</label>
-        <select id="metodo2">
-          <option value="">Ninguno</option>
-          <option value="Efectivo_$">Efectivo $</option>
-          <option value="BS">BS</option>
-          <option value="Zinli">Zinli</option>
+        <label>Método de Pago 2 (opcional)</label><select id="metodo2">
+          <option value="">Ninguno</option><option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option><option value="Zinli">Zinli</option>
           <option value="USDT">USDT</option>
         </select>
         <label>Monto Pago 2</label><input type="number" id="monto2" min="0" step="0.01">
         <label>Tasa BCV</label><input type="number" id="tasa" min="0" step="0.01" required>
         <label>Abono Total (USD)</label><input type="number" id="abono" readonly>
-        <label>Restante (USD)</label><input type="number" id="restante" class="" readonly>
+        <label>Restante (USD)</label><input type="number" id="restante" readonly>
         <div id="nota" class="nota"></div>
         <div class="form-actions">
           <button type="button" class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
@@ -119,26 +107,24 @@
     const endpoint = 'https://sheetdb.io/api/v1/7merahzf5ighx';
     let ventasData = [], clientesData = [];
 
-    function round2(n) { return Math.round(n*100)/100; }
+    function round2(x) { return Math.round(x * 100) / 100; }
 
     async function loadData() {
-      try {
-        const r = await fetch(endpoint);
-        ventasData = await r.json();
-        clientesData = ventasData.map(v => ({cliente:v.cliente,telefono:v.telefono}));
-        populateDatalists();
-      } catch(e) { console.error(e); }
+      const r = await fetch(endpoint);
+      ventasData = await r.json();
+      clientesData = ventasData.map(v => ({cliente:v.cliente,telefono:v.telefono}));
+      populateDatalists();
     }
 
     function populateDatalists() {
       const cList = [...new Set(clientesData.map(c=>c.cliente))];
       const tList = [...new Set(clientesData.map(c=>c.telefono))];
-      document.getElementById('clientes-list').innerHTML = cList.map(x=>`<option value="${x}">`).join('');
-      document.getElementById('telefonos-list').innerHTML = tList.map(x=>`<option value="${x}">`).join('');
+      document.getElementById('clientes-list').innerHTML = cList.map(x=>\`<option value="\${x}">\`).join('');
+      document.getElementById('telefonos-list').innerHTML = tList.map(x=>\`<option value="\${x}">\`).join('');
     }
 
     function clearForm() {
-      document.getElementById('ventaForm')?.reset();
+      document.getElementById('ventaForm').reset();
       document.getElementById('nota').textContent = '';
       document.getElementById('restante').classList.remove('negative');
     }
@@ -163,21 +149,21 @@
     }
 
     document.getElementById('cliente').addEventListener('change', () => {
-      const sel = clientesData.find(c=>c.cliente === document.getElementById('cliente').value);
-      if (sel) document.getElementById('telefono').value = sel.telefono;
+      const sel = clientesData.find(c=>c.cliente===document.getElementById('cliente').value);
+      if(sel) document.getElementById('telefono').value = sel.telefono;
     });
 
-    ['cantidad','precio'].forEach(id => {
-      document.getElementById(id).addEventListener('input', calculateTotal);
-    });
-    ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updateAbonoRestante);
-    });
+    ['cantidad','precio'].forEach(id=>
+      document.getElementById(id).addEventListener('input', calculateTotal)
+    );
+    ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id=>
+      document.getElementById(id).addEventListener('input', updateAbonoRestante)
+    );
 
     function calculateTotal() {
       const c = parseFloat(document.getElementById('cantidad').value)||0;
       const p = parseFloat(document.getElementById('precio').value)||0;
-      document.getElementById('total').value = round2(c*p);
+      document.getElementById('total').value = round2(c * p);
       updateAbonoRestante();
     }
 
@@ -185,11 +171,10 @@
       const total = parseFloat(document.getElementById('total').value)||0;
       const tasa = parseFloat(document.getElementById('tasa').value)||0;
       let abono = 0;
-      [{met:'metodo1',amt:'monto1'},{met:'metodo2',amt:'monto2'}].forEach(o => {
+      [{met:'metodo1',amt:'monto1'},{met:'metodo2',amt:'monto2'}].forEach(o=>{
         let val = parseFloat(document.getElementById(o.amt).value)||0;
-        const method = document.getElementById(o.met).value;
-        if (method === 'BS') {
-          val = tasa>0 ? val/tasa : 0;
+        if(document.getElementById(o.met).value === 'BS') {
+          val = tasa > 0 ? val / tasa : 0;
         }
         abono += val;
       });
@@ -228,30 +213,29 @@
         asesor: document.getElementById('asesor').value,
         comentario: document.getElementById('comentario').value
       }};
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        alert('Venta registrada con éxito');
-        showSection('clientesRegistrados');
-      } catch(e) {
-        console.error(e);
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
         alert('Error al registrar la venta');
+        return false;
       }
+      alert('Venta registrada con éxito');
+      await loadData();
+      showSection('clientesRegistrados');
       return false;
     }
 
     function renderClientes() {
       let html = '<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
-      const unique = [];
+      const seen = new Set();
       ventasData.forEach(v => {
-        if (!unique.find(u=>u.cliente===v.cliente)) unique.push(v);
-      });
-      unique.forEach(u => {
-        html += `<tr><td>${u.cliente}</td><td>${u.telefono}</td></tr>`;
+        if (!seen.has(v.cliente)) {
+          seen.add(v.cliente);
+          html += `<tr><td>${v.cliente}</td><td>${v.telefono}</td></tr>`;
+        }
       });
       html += '</table>';
       document.getElementById('tablaClientes').innerHTML = html;
@@ -277,9 +261,7 @@
       document.getElementById('tablaVentas').innerHTML = html;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      loadData();
-    });
+    window.addEventListener('DOMContentLoaded', () => loadData());
   </script>
 </body>
 </html>
