@@ -1,70 +1,109 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Registro de Ventas - NEXT</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; }
-        header { background: #001f9e; padding: 1em; color: white; text-align: center; }
-        .logo { height: 40px; vertical-align: middle; }
-        .container { max-width: 600px; margin: 2em auto; background: white; padding: 2em; border-radius: 10px; }
-        input, select, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; }
-        button { background-color: #001f9e; color: white; font-weight: bold; cursor: pointer; }
-        button:hover { background-color: #000066; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APP NEXT</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #f2f2f2; }
+    header { background: #0d6efd; color: white; padding: 1rem; text-align: center; font-size: 1.5rem; }
+    main { padding: 1rem; }
+    .menu { display: flex; flex-direction: column; gap: 0.75rem; }
+    .btn { padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; font-weight: bold; color: #0d6efd; text-decoration: none; }
+    form { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+    input, select, textarea { padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; }
+    button { padding: 0.75rem; background: #0d6efd; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
-    <header>
-        <img src="logo.png" alt="Logo NEXT" class="logo" />
-        <h1>Registro de Ventas</h1>
-    </header>
-    <div class="container">
-        <form id="ventaForm">
-            <input type="text" name="cliente" placeholder="Cliente" required />
-            <input type="text" name="telefono" placeholder="Teléfono" required />
-            <input type="text" name="producto" placeholder="Producto" required />
-            <input type="number" name="cantidad" placeholder="Cantidad" required />
-            <input type="number" name="precio_unitario" placeholder="Precio Unitario" required />
-            <input type="number" name="abono" placeholder="Abono" value="0" required />
-            <select name="forma_pago">
-                <option value="efectivo">Efectivo</option>
-                <option value="zelle">Zelle</option>
-                <option value="transferencia">Transferencia</option>
-            </select>
-            <select name="divisa">
-                <option value="USD">USD</option>
-                <option value="Bs">Bs</option>
-            </select>
-            <input type="text" name="asesor" placeholder="Asesor" required />
-            <input type="text" name="comentario" placeholder="Comentario" />
-            <button type="submit">Registrar Venta</button>
-        </form>
+  <header>APP NEXT</header>
+  <main>
+    <div class="menu" id="menu">
+      <a class="btn" onclick="showForm('venta')">Registrar Venta</a>
+      <a class="btn">CRM</a>
+      <a class="btn">Diseños</a>
+      <a class="btn">Stock</a>
+      <a class="btn">Compras</a>
+      <a class="btn">Finanzas</a>
+      <a class="btn">Marketing</a>
+      <a class="btn">Agenda</a>
+      <a class="btn">Reportes</a>
     </div>
-    <script>
-        document.getElementById("ventaForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = {};
-            formData.forEach((value, key) => { data[key] = value });
-            data["total"] = Number(data["cantidad"]) * Number(data["precio_unitario"]);
-            data["restante"] = data["total"] - Number(data["abono"]);
-            fetch("https://sheetdb.io/api/v1/7merahzf5ighx", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ data })
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("Venta registrada exitosamente");
-                    e.target.reset();
-                } else {
-                    alert("Error al registrar la venta");
-                }
-            })
-            .catch(() => alert("Error de conexión al registrar la venta"));
-        });
-    </script>
+
+    <div id="formularioVenta" class="hidden">
+      <h2>Registrar Venta</h2>
+      <form onsubmit="enviarVenta(event)">
+        <input type="text" id="cliente" placeholder="Cliente" required>
+        <input type="text" id="producto" placeholder="Producto" required>
+        <input type="number" id="cantidad" placeholder="Cantidad" required>
+        <input type="number" id="precio" placeholder="Precio Unitario" required>
+        <select id="forma_pago">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="zinli">Zinli</option>
+          <option value="usdt">USDT</option>
+        </select>
+        <input type="text" id="divisa" placeholder="Divisa (USD, Bs)" required>
+        <input type="text" id="asesor" placeholder="Asesor" required>
+        <textarea id="comentario" placeholder="Comentario"></textarea>
+        <input type="hidden" id="total">
+        <button type="submit">Enviar</button>
+        <button type="button" onclick="volverMenu()">Volver</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const sheetdbEndpoint = "https://sheetdb.io/api/v1/7merahzf5ighx";
+
+    function showForm(tipo) {
+      document.getElementById("menu").classList.add("hidden");
+      if (tipo === 'venta') document.getElementById("formularioVenta").classList.remove("hidden");
+    }
+
+    function volverMenu() {
+      document.getElementById("formularioVenta").classList.add("hidden");
+      document.getElementById("menu").classList.remove("hidden");
+    }
+
+    function enviarVenta(event) {
+      event.preventDefault();
+      const cantidad = parseFloat(document.getElementById("cantidad").value);
+      const precio = parseFloat(document.getElementById("precio").value);
+      const total = cantidad * precio;
+      document.getElementById("total").value = total;
+
+      const data = {
+        data: {
+          fecha: new Date().toISOString().split('T')[0],
+          cliente: document.getElementById("cliente").value,
+          producto: document.getElementById("producto").value,
+          cantidad: cantidad,
+          precio_unitario: precio,
+          total: total,
+          forma_pago: document.getElementById("forma_pago").value,
+          divisa: document.getElementById("divisa").value,
+          asesor: document.getElementById("asesor").value,
+          comentario: document.getElementById("comentario").value
+        }
+      };
+
+      fetch(sheetdbEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert("Venta registrada con éxito");
+        volverMenu();
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error al registrar la venta");
+      });
+    }
+  </script>
 </body>
 </html>
