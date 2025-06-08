@@ -186,15 +186,30 @@
       clientesData = ventasData.map(v => ({ cliente: v.cliente, telefono: v.telefono }));
     }
 
-    async function fetchTasaBCV() {
-      try {
-        const res = await fetch('https://pydolarve.org/api/v2/tipo-cambio?currency=usd&rounded_price=true');
-        const json = await res.json();
-        return parseFloat(json.monitors.bcv.price);
-      } catch (e) {
-        console.error('Error fetchTasaBCV', e);
-        return 0;
-      }
+    
+// Obtener tasa BCV con fallback a DolarToday
+async function fetchTasaBCV() {
+  // Intenta API PyDolarVenezuela
+  try {
+    const res = await fetch('https://pydolarve.org/api/v2/tipo-cambio?currency=usd&rounded_price=true');
+    const json = await res.json();
+    const rate = parseFloat(json.monitors.bcv.price);
+    if (rate > 0) return rate;
+  } catch (e) {
+    console.warn('PyDolar falló, intentando DolarToday', e);
+  }
+  // Fallback DolarToday
+  try {
+    const resp2 = await fetch('https://s3.amazonaws.com/dolartoday/data.json');
+    const data2 = await resp2.json();
+    const rate2 = parseFloat(data2.USD_BCV.rate);
+    if (rate2 > 0) return rate2;
+  } catch (e) {
+    console.error('Error fallback DolarToday', e);
+  }
+  return 0;
+}
+
     }
 
     function round2(n) { return Math.round(n * 100) / 100; }
