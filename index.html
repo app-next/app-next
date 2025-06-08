@@ -35,7 +35,7 @@
   <header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
   <main>
     <div id="mainMenu" class="menu">
-      <button class="btn" data-section="ventasMenu">Ventas</button>
+      <button id="btnVentas" class="btn" data-section="ventasMenu">Ventas</button>
       <button class="btn">CRM</button>
       <button class="btn">Diseños</button>
       <button class="btn">Stock</button>
@@ -51,249 +51,23 @@
       <button class="subbtn" data-section="informeVentas">Informe de Ventas</button>
       <button class="subbtn back-btn" data-section="mainMenu">Volver</button>
     </div>
-    <div id="formVenta" class="hidden">
-      <h2>Registrar Venta</h2>
-      <form id="ventaForm" onsubmit="return enviarVenta(event)">
-        <label for="cliente">Cliente</label>
-        <input list="clientes-list" id="cliente" required autocomplete="off">
-        <datalist id="clientes-list"></datalist>
-
-        <label for="telefono">Teléfono</label>
-        <input list="telefonos-list" id="telefono" type="tel" pattern="\d+" inputmode="numeric" required autocomplete="off">
-        <datalist id="telefonos-list"></datalist>
-
-        <label for="producto">Producto</label>
-        <input id="producto" required>
-
-        <label for="cantidad">Cantidad</label>
-        <input id="cantidad" type="number" min="1" step="1" required>
-
-        <label for="precio">Precio Unitario</label>
-        <input id="precio" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal" required>
-
-        <label for="total">Total</label>
-        <input id="total" type="text" readonly>
-
-        <label for="metodo1">Método de Pago 1</label>
-        <select id="metodo1" required>
-          <option value="" disabled selected>Selecciona Método</option>
-          <option value="Efectivo_$">Efectivo $</option>
-          <option value="BS">BS</option>
-          <option value="Zinli">Zinli</option>
-          <option value="USDT">USDT</option>
-        </select>
-
-        <label for="monto1">Monto Pago 1</label>
-        <input id="monto1" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal" required>
-
-        <label for="metodo2">Método de Pago 2 (opcional)</label>
-        <select id="metodo2">
-          <option value="" selected>Ninguno</option>
-          <option value="Efectivo_$">Efectivo $</option>
-          <option value="BS">BS</option>
-          <option value="Zinli">Zinli</option>
-          <option value="USDT">USDT</option>
-        </select>
-
-        <label for="monto2">Monto Pago 2</label>
-        <input id="monto2" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal">
-
-        <label for="tasa">Tasa BCV (auto)</label>
-        <input id="tasa" type="text" readonly>
-
-        <label for="abono">Abono Total (USD)</label>
-        <input id="abono" type="text" readonly>
-
-        <label for="restante">Restante (USD)</label>
-        <input id="restante" type="text" readonly>
-
-        <div id="nota" class="nota"></div>
-
-        <label for="asesor">Asesor</label>
-        <input id="asesor" type="text" required>
-
-        <label for="comentario">Comentarios</label>
-        <textarea id="comentario"></textarea>
-
-        <div class="form-actions">
-          <button type="button" class="form-btn back-btn" data-section="ventasMenu">Volver</button>
-          <button type="submit" class="form-btn submit-btn">Enviar</button>
-        </div>
-      </form>
-    </div>
-    <div id="clientesRegistrados" class="hidden">
-      <h2>Clientes Registrados</h2>
-      <div id="tablaClientes"></div>
-      <div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div>
-    </div>
-    <div id="clientesDeuda" class="hidden">
-      <h2>Clientes con Deudas</h2>
-      <div id="tablaDeudas"></div>
-      <div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div>
-    </div>
-    <div id="informeVentas" class="hidden">
-      <h2>Informe de Ventas</h2>
-      <div id="tablaVentas"></div>
-      <div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div>
-    </div>
+    <!-- Secciones ocultas -->
+    <div id="formVenta" class="hidden"><!-- Formulario --></div>
+    <div id="clientesRegistrados" class="hidden"><!-- Tabla Clientes --></div>
+    <div id="clientesDeuda" class="hidden"><!-- Tabla Deudas --></div>
+    <div id="informeVentas" class="hidden"><!-- Informe Ventas --></div>
   </main>
-  <script>
-    const api = 'https://sheetdb.io/api/v1/7merahzf5ighx';
-    let ventasData = [], clientesData = [];
-    let rawPrecio='0', rawMonto1='0', rawMonto2='0', rawTasa='0';
-
-    async function fetchTasaBCV() {
-      try {
-        const res = await fetch('https://s3.amazonaws.com/dolartoday/data.json');
-        const data = await res.json();
-        return parseFloat(data.USD_BCV.rate.replace(',', '.')) || 0;
-      } catch (e) {
-        console.error('Error obteniendo tasa BCV:', e);
-        return 0;
-      }
-    }
-
-    function round2(n) { return Math.round(n*100)/100; }
-
-    async function loadData() {
-      const res = await fetch(api);
-      ventasData = await res.json();
-      clientesData = ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
-    }
-
-    function populateDatalists() {
-      document.getElementById('clientes-list').innerHTML = [...new Set(clientesData.map(c=>c.cliente))].map(x=>`<option value="${x}">`).join('');
-      document.getElementById('telefonos-list').innerHTML = [...new Set(clientesData.map(c=>c.telefono))].map(x=>`<option value="${x}">`).join('');
-    }
-
-    function fillTelefono() {
-      const sel = clientesData.find(c=>c.cliente===document.getElementById('cliente').value);
-      if (sel) document.getElementById('telefono').value = sel.telefono;
-    }
-
-    function clearForm() {
-      document.getElementById('ventaForm').reset();
-      document.getElementById('nota').textContent='';
-      document.getElementById('restante').classList.remove('negative');
-      rawPrecio=rawMonto1=rawMonto2=rawTasa='0';
-    }
-
-    function calculateTotal() {
-      const c = parseFloat(document.getElementById('cantidad').value)||0;
-      const p = parseFloat(rawPrecio)||0;
-      document.getElementById('total').value = round2(c*p).toFixed(2);
-      updateAbonoRestante();
-    }
-
-    function updateAbonoRestante() {
-      const total = parseFloat(document.getElementById('total').value)||0;
-      const tasa = parseFloat(rawTasa)||0;
-      let ab = 0;
-      const m1 = document.getElementById('metodo1').value;
-      if (m1) {
-        let v1 = parseFloat(rawMonto1)||0;
-        if (m1==='BS') v1 = tasa>0?v1/tasa:0;
-        ab += v1;
-      }
-      const m2 = document.getElementById('metodo2').value;
-      if (m2) {
-        let v2 = parseFloat(rawMonto2)||0;
-        if (m2==='BS') v2 = tasa>0?v2/tasa:0;
-        ab += v2;
-      }
-      ab=round2(ab);
-      const rem=round2(total-ab);
-      document.getElementById('abono').value=ab.toFixed(2);
-      const rEl=document.getElementById('restante');
-      rEl.value=rem.toFixed(2);
-      if(rem<0){ rEl.classList.add('negative'); document.getElementById('nota').textContent='Saldo a favor'; }
-      else{ rEl.classList.remove('negative'); document.getElementById('nota').textContent=''; }
-    }
-
-    async function enviarVenta(ev) {
-      ev.preventDefault();
-      const m1=document.getElementById('metodo1').value, m2=document.getElementById('metodo2').value;
-      if ((m1==='BS'||m2==='BS') && !rawTasa) { alert('Tasa BCV no disponible'); return false; }
-      const payload = { data:{
-        fecha:new Date().toISOString().split('T')[0],
-        cliente:document.getElementById('cliente').value,
-        telefono:document.getElementById('telefono').value,
-        producto:document.getElementById('producto').value,
-        cantidad:parseFloat(document.getElementById('cantidad').value)||0,
-        precio_unitario:parseFloat(rawPrecio)||0,
-        total:parseFloat(document.getElementById('total').value)||0,
-        metodo_pago_1:m1,monto_pago_1:parseFloat(rawMonto1)||0,
-        metodo_pago_2:m2,monto_pago_2:parseFloat(rawMonto2)||0,
-        tasa_bcv:parseFloat(rawTasa)||0,
-        equivalente_usd_bs:round2((parseFloat(document.getElementById('abono').value)||0)-(parseFloat(rawMonto1)||0)),
-        abono:parseFloat(document.getElementById('abono').value)||0,
-        restante:parseFloat(document.getElementById('restante').value)||0,
-        asesor:document.getElementById('asesor').value,
-        comentario:document.getElementById('comentario').value
-      }};
-      const res = await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(!res.ok){ alert('Error al registrar'); return false; }
-      alert('Venta registrada con éxito');
-      showSection('ventasMenu');
-      return false;
-    }
-
-    function renderClientes() {
-      let html='<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
-      Array.from(new Set(ventasData.map(v=>v.cliente))).forEach(name=>{
-        const tel=ventasData.find(v=>v.cliente===name).telefono;
-        html+=`<tr><td>${name}</td><td>${tel}</td></tr>`;
-      });
-      html+='</table>';
-      document.getElementById('tablaClientes').innerHTML=html;
-    }
-
-    function renderDeudas() {
-      let html='<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>'; 
-      ventasData.forEach(v=>{ if(parseFloat(v.restante)>0) html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`; });
-      html+='</table>';
-      document.getElementById('tablaDeudas').innerHTML=html;
-    }
-
-    function renderInforme() {
-      let html='<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
-      ventasData.forEach(v=>{ html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2}</td><td>${v.monto_pago_2}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`; });
-      html+='</table>';
-      document.getElementById('tablaVentas').innerHTML=html;
-    }
-
-    function runChecks() {
-      const btnVentas = document.querySelector('.btn[data-section="ventasMenu"]');
-      if (!btnVentas) { console.error('Chequeo: Botón Ventas no encontrado'); return; }
-      btnVentas.click();
-      const vm = document.getElementById('ventasMenu');
-      if (vm.classList.contains('hidden')) {
-        console.error('Chequeo: Submenú Ventas sigue oculto');
-      } else {
-        console.log('Chequeo: Navegación a Ventas OK');
-      }
-      showSection('mainMenu');
-    }
-
-    function showSection(sec) {
-      ['mainMenu','ventasMenu','formVenta','clientesRegistrados','clientesDeuda','informeVentas']
-        .forEach(id=>document.getElementById(id).classList.add('hidden'));
-      document.getElementById(sec).classList.remove('hidden');
-      if (sec!=='mainMenu') {
-        loadData().then(()=> {
-          populateDatalists();
-          if (sec==='formVenta') { clearForm(); calculateTotal(); }
-          if (sec==='clientesRegistrados') renderClientes();
-          if (sec==='clientesDeuda') renderDeudas();
-          if (sec==='informeVentas') renderInforme();
-        });
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      showSection('mainMenu');
-      loadData().then(runChecks);
-    });
-  </script>
+<script>
+  const sections = ['mainMenu','ventasMenu','formVenta','clientesRegistrados','clientesDeuda','informeVentas'];
+  function showSection(sec) {
+    sections.forEach(id=>document.getElementById(id).classList.add('hidden'));
+    document.getElementById(sec).classList.remove('hidden');
+  }
+  document.addEventListener('DOMContentLoaded', ()=>{
+    // Bind using onclick
+    document.querySelectorAll('[data-section]').forEach(btn=> btn.onclick = ()=> showSection(btn.dataset.section));
+    showSection('mainMenu');
+  });
+</script>
 </body>
 </html>
