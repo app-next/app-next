@@ -291,6 +291,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+
+    // Bind navigation buttons
+    document.querySelectorAll('[data-section]').forEach(btn => {
+      btn.addEventListener('click', () => showSection(btn.dataset.section));
+    });
+
       showSection('mainMenu');
       loadData().then(runChecks);
     });
