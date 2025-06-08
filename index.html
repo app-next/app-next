@@ -1,200 +1,59 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>APP NEXT</title>
+  <title>Registro de Ventas - NEXT</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
-      color: #000000;
-    }
-    header {
-      background: #0026ff;
-      padding: 1rem 0;
-      text-align: center;
-    }
-    header img {
-      height: 60px;
-    }
-    main {
-      max-width: 700px;
-      margin: 2rem auto;
-      background: #f9f9f9;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    .menu, .submenu, .formulario {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    button {
-      padding: 1rem;
-      background: #0026ff;
-      color: white;
-      border: none;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #001bb3;
-    }
-    input, select {
-      padding: 0.8rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .hidden {
-      display: none;
-    }
-    .totales {
-      font-weight: bold;
-      text-align: right;
-    }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .formulario { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, select, button { width: 100%; padding: 10px; margin-top: 10px; }
+    #listaContactos button { margin: 5px 0; width: 100%; }
   </style>
 </head>
 <body>
-  <header>
-    <img src="logo.png" alt="Logo NEXT">
-  </header>
-
-  <main id="menuPrincipal">
-    <h2>MENÚ PRINCIPAL</h2>
-    <div class="menu">
-      <button onclick="abrirSubmenu()">Ventas</button>
-      <button onclick="alert('CRM en desarrollo')">CRM</button>
-      <button onclick="alert('Finanzas en desarrollo')">Finanzas</button>
-      <button onclick="alert('Compras en desarrollo')">Compras</button>
-      <button onclick="alert('Stock en desarrollo')">Stock</button>
-      <button onclick="alert('Agenda en desarrollo')">Agenda</button>
-      <button onclick="alert('Diseños pendientes en desarrollo')">Diseños Pendientes</button>
-      <button onclick="alert('Ideas de producto en desarrollo')">Ideas Producto</button>
-      <button onclick="alert('Fichas técnicas en desarrollo')">Fichas Técnicas</button>
-      <button onclick="alert('Medios de pago en desarrollo')">Medios de Pago</button>
+  <div class="formulario">
+    <h2>Registrar Venta</h2>
+    <input type="text" id="cliente" placeholder="Nombre del cliente">
+    <input type="text" id="telefono" placeholder="Número de teléfono">
+    <input type="number" id="cantidad" placeholder="Cantidad">
+    <input type="number" id="precio" placeholder="Precio unitario">
+    <input type="number" id="abono" placeholder="Abono">
+    <input type="number" id="total" placeholder="Total" readonly>
+    <input type="number" id="restante" placeholder="Restante" readonly>
+    <select id="metodo_pago">
+      <option>Seleccione método de pago</option>
+      <option>Efectivo Bs</option>
+      <option>Efectivo USD</option>
+      <option>Zinli</option>
+      <option>USDT</option>
+    </select>
+    <button onclick="registrarVenta()">Registrar Venta</button>
+    <hr>
+    <h3>Contactos registrados</h3>
+    <input type="text" id="busquedaContacto" onkeyup="filtrarContactos()" placeholder="Buscar nombre o teléfono" />
+    <div id="listaContactos">
+      <button onclick="usarContacto('Prueba', '12345')">Prueba (12345)</button>
+      <button onclick="usarContacto('jesus', '6789')">jesus (6789)</button>
+      <button onclick="usarContacto('Jesús Guevara', '101010')">Jesús Guevara (101010)</button>
+      <button onclick="usarContacto('Barbara', '202002')">Barbara (202002)</button>
+      <button onclick="usarContacto('Jesus', '303030')">Jesus (303030)</button>
+      <button onclick="usarContacto('PEDRO PEREZ', '5777')">PEDRO PEREZ (5777)</button>
     </div>
-  </main>
-
-  <main id="subMenuVentas" class="hidden">
-    <h2>VENTAS</h2>
-    <div class="submenu">
-      <button onclick="mostrarFormulario()">Registrar venta</button>
-      <button onclick="alert('Clientes registrados funcional en conexión')">Clientes registrados</button>
-      <button onclick="alert('Clientes con deudas funcional en conexión')">Clientes con deudas</button>
-      <button onclick="alert('Informe de ventas funcional en conexión')">Informe de ventas</button>
-      <button onclick="volverMenu()">⬅ Volver al menú principal</button>
-    </div>
-  </main>
-
-  <main id="formularioVenta" class="hidden">
-    <h2>REGISTRAR VENTA</h2>
-    <div class="formulario">
-      <input type="text" id="cliente" placeholder="Nombre del cliente" oninput="autocompletar()">
-      <input type="text" id="telefono" placeholder="Teléfono">
-      <input type="text" id="producto" placeholder="Producto">
-      <input type="number" id="cantidad" placeholder="Cantidad" oninput="calcularTotal()">
-      <input type="number" id="precio" placeholder="Precio unitario" oninput="calcularTotal()">
-      <div class="totales">Total: <span id="total">0</span></div>
-      <input type="number" id="abono" placeholder="Abono" oninput="calcularRestante()">
-      <div class="totales">Restante: <span id="restante">0</span></div>
-      <select id="forma_pago">
-        <option value="">Forma de pago</option>
-        <option>Efectivo</option>
-        <option>Zinli</option>
-        <option>Pago Móvil</option>
-        <option>USDT</option>
-      </select>
-      <select id="divisa">
-        <option value="">Divisa</option>
-        <option>USD</option>
-        <option>Bs</option>
-      </select>
-      <input type="text" id="asesor" placeholder="Asesor">
-      <textarea id="comentario" placeholder="Comentario"></textarea>
-      <button onclick="enviarFormulario()">Enviar</button>
-      <button onclick="volverSubmenu()">⬅ Volver al submenú</button>
-    </div>
-  </main>
+  </div>
 
   <script>
-    function abrirSubmenu() {
-      document.getElementById('menuPrincipal').classList.add('hidden');
-      document.getElementById('subMenuVentas').classList.remove('hidden');
+    function usarContacto(nombre, telefono) {
+      document.getElementById('cliente').value = nombre;
+      document.getElementById('telefono').value = telefono;
     }
-    function volverMenu() {
-      document.getElementById('subMenuVentas').classList.add('hidden');
-      document.getElementById('menuPrincipal').classList.remove('hidden');
-    }
-    function mostrarFormulario() {
-      document.getElementById('subMenuVentas').classList.add('hidden');
-      document.getElementById('formularioVenta').classList.remove('hidden');
-    }
-    function volverSubmenu() {
-      document.getElementById('formularioVenta').classList.add('hidden');
-      document.getElementById('subMenuVentas').classList.remove('hidden');
-    }
-    function calcularTotal() {
-      const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
-      const precio = parseFloat(document.getElementById('precio').value) || 0;
-      const total = cantidad * precio;
-      document.getElementById('total').textContent = total.toFixed(2);
-      calcularRestante();
-    }
-    function calcularRestante() {
-      const total = parseFloat(document.getElementById('total').textContent) || 0;
-      const abono = parseFloat(document.getElementById('abono').value) || 0;
-      const restante = total - abono;
-      document.getElementById('restante').textContent = restante.toFixed(2);
-    }
-    function autocompletar() {
-      // Aquí se puede conectar con registros previos si se desea
-    }
-    function enviarFormulario() {
-      const datos = {
-        fecha: new Date().toLocaleDateString("es-VE"),
-        cliente: document.getElementById("cliente").value,
-        telefono: document.getElementById("telefono").value,
-        producto: document.getElementById("producto").value,
-        cantidad: document.getElementById("cantidad").value,
-        precio_unitario: document.getElementById("precio").value,
-        total: document.getElementById("total").textContent,
-        abono: document.getElementById("abono").value,
-        restante: document.getElementById("restante").textContent,
-        forma_pago: document.getElementById("forma_pago").value,
-        divisa: document.getElementById("divisa").value,
-        asesor: document.getElementById("asesor").value,
-        comentario: document.getElementById("comentario").value
-    };
-    fetch("https://sheetdb.io/api/v1/7merahzf5ighx", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ data: datos })
-    })
-    .then(response => {
-        if (response.ok) {
-            alert("✅ Venta registrada correctamente");
-            volverSubmenu();
-        } else {
-            alert("❌ Error al registrar la venta");
-        }
-    })
-    .catch(error => {
-        alert("❌ Error de conexión con SheetDB");
-    });
+
+    function filtrarContactos() {
+      const filtro = document.getElementById("busquedaContacto").value.toLowerCase();
+      const botones = document.getElementById("listaContactos").getElementsByTagName("button");
+      for (let i = 0; i < botones.length; i++) {
+        const texto = botones[i].innerText.toLowerCase();
+        botones[i].style.display = texto.includes(filtro) ? "" : "none";
+      }
     }
   </script>
 </body>
