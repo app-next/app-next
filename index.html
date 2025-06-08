@@ -3,48 +3,30 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registro de Ventas - NEXT</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #001f8f;
-            padding: 1em;
-            color: white;
-            display: flex;
-            align-items: center;
-        }
-        header img {
-            height: 40px;
-            margin-right: 1em;
-        }
-        h1 {
-            margin: 0;
-        }
-        .content {
-            padding: 2em;
-            background: white;
-            max-width: 600px;
-            margin: 2em auto;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .message {
-            font-size: 1.2em;
-            color: #333;
-        }
-    </style>
+    <title>Registro de Ventas</title>
+    <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <header>
-        <img src="assets/logo.png" alt="NEXT Logo">
+        <img src="assets/logo.png" alt="NEXT Logo" class="logo">
         <h1>Registro de Ventas</h1>
     </header>
-    <div class="content">
-        <p class="message">Este panel ha sido validado con el protocolo completo.</p>
-    </div>
+    <main>
+        <div class="panel">
+            <form id="ventaForm">
+                <input type="text" placeholder="Nombre del cliente" required>
+                <input type="text" placeholder="Teléfono" required>
+                <input type="number" placeholder="Cantidad" required>
+                <input type="number" placeholder="Precio Unitario" required>
+                <input type="number" placeholder="Abono" required>
+                <select>
+                    <option>Efectivo</option>
+                    <option>Zinli</option>
+                    <option>USDT</option>
+                </select>
+                <button type="submit">Registrar Venta</button>
+            </form>
+        </div>
+    </main>
 </body>
 </html>
