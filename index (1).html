@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APP NEXT</title>
+  <style>
+    :root {--black:#000;--white:#fff;--blue:#0033A0;--yellow:#FFD700;--gray-bg:#f5f5f5;--red:#E63946;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:sans-serif;background:var(--gray-bg);display:flex;flex-direction:column;min-height:100vh;}
+    header{background:var(--black);text-align:center;padding:1rem;}
+    header .logo{height:50px;}
+    main{flex:1;max-width:900px;margin:1rem auto;background:var(--white);padding:1rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+    .menu,.submenu{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;}
+    .menu .btn,.submenu .subbtn{padding:0.75rem;background:var(--blue);color:var(--white);border:none;border-radius:6px;font-size:1rem;cursor:pointer;text-align:center;width:100%;}
+    .menu .btn:hover,.submenu .subbtn:hover{background:var(--yellow);color:var(--black);}
+    .hidden{display:none!important;}
+    form{display:flex;flex-direction:column;gap:0.5rem;max-width:600px;margin:auto;}
+    label{font-weight:500;font-size:0.9rem;margin-top:0.5rem;}
+    input,select,textarea{padding:0.5rem;font-size:1rem;border:1px solid #ccc;border-radius:6px;width:100%;}
+    input[readonly]{background:#eee;}
+    #restante.negative{color:var(--red);}
+    .nota{font-size:0.9rem;color:var(--red);text-align:right;}
+    .form-actions{display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem;}
+    .form-btn{padding:0.5rem 1rem;border:none;border-radius:6px;font-size:1rem;cursor:pointer;}
+    .submit-btn{background:var(--blue);color:var(--white);}
+    .submit-btn:hover{background:var(--yellow);color:var(--black);}
+    .back-btn{background:#444;color:var(--white);}
+    .back-btn:hover{background:var(--yellow);color:var(--black);}
+    table{width:100%;border-collapse:collapse;margin-top:1rem;}
+    th,td{border:1px solid #ccc;padding:0.5rem;text-align:left;}
+  </style>
+</head>
+<body>
+<header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
+<main>
+  <div id="mainMenu" class="menu">
+    <button class="btn" data-section="ventasMenu">Ventas</button>
+    <button class="btn">CRM</button><button class="btn">Diseños</button><button class="btn">Stock</button>
+    <button class="btn">Compras</button><button class="btn">Finanzas</button><button class="btn">Marketing</button>
+    <button class="btn">Agenda</button>
+  </div>
+  <div id="ventasMenu" class="submenu hidden">
+    <button class="subbtn" data-section="formVenta">Registrar Venta</button>
+    <button class="subbtn" data-section="clientesRegistrados">Clientes Registrados</button>
+    <button class="subbtn" data-section="clientesDeuda">Clientes con Deudas</button>
+    <button class="subbtn" data-section="informeVentas">Informe de Ventas</button>
+    <button class="subbtn back-btn" data-section="mainMenu">Volver</button>
+  </div>
+  <div id="formVenta" class="hidden">
+    <h2>Registrar Venta</h2>
+    <form id="ventaForm" onsubmit="return enviarVenta(event)">
+      <label>Cliente</label><input list="clientes-list" id="cliente" required autocomplete="off"><datalist id="clientes-list"></datalist>
+      <label>Teléfono</label><input list="telefonos-list" id="telefono" type="tel" pattern="\d+" inputmode="numeric" required autocomplete="off"><datalist id="telefonos-list"></datalist>
+      <label>Producto</label><input id="producto" required>
+      <label>Cantidad</label><input id="cantidad" type="number" min="1" step="1" required>
+      <label>Precio Unitario</label><input id="precio" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal" required>
+      <label>Total</label><input id="total" type="text" readonly>
+      <label>Método de Pago 1</label><select id="metodo1" required>
+        <option value="" disabled selected>Selecciona Método</option>
+        <option value="Efectivo_$">Efectivo $</option><option value="BS">BS</option><option value="Zinli">Zinli</option><option value="USDT">USDT</option>
+      </select>
+      <label>Monto Pago 1</label><input id="monto1" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal" required>
+      <label>Método de Pago 2 (opcional)</label><select id="metodo2">
+        <option value="" selected>Ninguno</option><option value="Efectivo_$">Efectivo $</option><option value="BS">BS</option><option value="Zinli">Zinli</option><option value="USDT">USDT</option>
+      </select>
+      <label>Monto Pago 2</label><input id="monto2" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal">
+      <label>Tasa BCV (opcional)</label><input id="tasa" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal">
+      <label>Abono Total (USD)</label><input id="abono" type="text" readonly>
+      <label>Restante (USD)</label><input id="restante" type="text" readonly>
+      <div id="nota" class="nota"></div>
+      <label>Asesor</label><input id="asesor" type="text" required>
+      <label>Comentarios</label><textarea id="comentario"></textarea>
+      <div class="form-actions"><button type="button" class="form-btn back-btn" data-section="ventasMenu">Volver</button><button type="submit" class="form-btn submit-btn">Enviar</button></div>
+    </form>
+  </div>
+  <div id="clientesRegistrados" class="hidden"><h2>Clientes Registrados</h2><div id="tablaClientes"></div><div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div></div>
+  <div id="clientesDeuda" class="hidden"><h2>Clientes con Deudas</h2><div id="tablaDeudas"></div><div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div></div>
+  <div id="informeVentas" class="hidden"><h2>Informe de Ventas</h2><div id="tablaVentas"></div><div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div></div>
+</main>
+<script>
+const api='https://sheetdb.io/api/v1/7merahzf5ighx';
+let ventasData=[], clientesData=[], rawPrecio='0', rawMonto1='0', rawMonto2='0', rawTasa='0';
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-section]').forEach(btn=>btn.onclick=()=>showSection(btn.dataset.section));
+  document.getElementById('cliente').addEventListener('input',fillTelefono);
+  ['cantidad'].forEach(id=>document.getElementById(id).addEventListener('input',calculateTotal));
+  document.getElementById('precio').addEventListener('input',e=>{
+    rawPrecio=e.target.value; calculateTotal();
+  });
+  document.getElementById('monto1').addEventListener('input',e=>{
+    rawMonto1=e.target.value; updateAbonoRestante();
+  });
+  ['metodo1'].forEach(id=>document.getElementById(id).addEventListener('change',updateAbonoRestante));
+  document.getElementById('monto2').addEventListener('input',e=>{
+    rawMonto2=e.target.value; updateAbonoRestante();
+  });
+  document.getElementById('metodo2').addEventListener('change',updateAbonoRestante);
+  document.getElementById('tasa').addEventListener('input',e=>{
+    rawTasa=e.target.value; updateAbonoRestante();
+  });
+  showSection('mainMenu'); loadData();
+});
+
+async function loadData(){
+  const r=await fetch(api); ventasData=await r.json(); clientesData=ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
+}
+
+function showSection(sec){
+  ['mainMenu','ventasMenu','formVenta','clientesRegistrados','clientesDeuda','informeVentas']
+    .forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById(sec).classList.remove('hidden');
+  if(sec!=='mainMenu'){loadData().then(()=>{
+    populateDatalists();
+    if(sec==='formVenta'){clearForm(); calculateTotal();}
+    if(sec==='clientesRegistrados')renderClientes(); if(sec==='clientesDeuda')renderDeudas(); if(sec==='informeVentas')renderInforme();
+  });}
+}
+
+function populateDatalists(){
+  document.getElementById('clientes-list').innerHTML=[...new Set(clientesData.map(c=>c.cliente))].map(x=>`<option value="${x}">`).join('');
+  document.getElementById('telefonos-list').innerHTML=[...new Set(clientesData.map(c=>c.telefono))].map(x=>`<option value="${x}">`).join('');
+}
+
+function fillTelefono(){
+  const sel=clientesData.find(c=>c.cliente===document.getElementById('cliente').value);
+  if(sel)document.getElementById('telefono').value=sel.telefono;
+}
+
+function round2(n){return Math.round(n*100)/100;}
+
+function clearForm(){
+  document.getElementById('ventaForm').reset(); document.getElementById('nota').textContent='';
+  document.getElementById('restante').classList.remove('negative');
+  rawPrecio='0'; rawMonto1='0'; rawMonto2='0'; rawTasa='0';
+}
+
+function calculateTotal(){
+  const c=parseFloat(document.getElementById('cantidad').value)||0;
+  const p=parseFloat(rawPrecio)||0;
+  document.getElementById('total').value=round2(c*p).toFixed(2);
+  updateAbonoRestante();
+}
+
+function updateAbonoRestante(){
+  const total=parseFloat(document.getElementById('total').value)||0;
+  const tasa=parseFloat(rawTasa)||0; let ab=0;
+  // pago1
+  const m1=document.getElementById('metodo1').value;
+  if(m1){
+    let v1=parseFloat(rawMonto1)||0;
+    if(m1==='BS')v1=tasa>0?v1/tasa:0; ab+=v1;
+  }
+  // pago2
+  const m2=document.getElementById('metodo2').value;
+  if(m2){
+    let v2=parseFloat(rawMonto2)||0;
+    if(m2==='BS')v2=tasa>0?v2/tasa:0; ab+=v2;
+  }
+  ab=round2(ab); const rem=round2(total-ab);
+  document.getElementById('abono').value=ab.toFixed(2);
+  const rEl=document.getElementById('restante'); rEl.value=rem.toFixed(2);
+  if(rem<0){rEl.classList.add('negative');document.getElementById('nota').textContent='Saldo a favor';}
+  else{rEl.classList.remove('negative');document.getElementById('nota').textContent='';}
+}
+
+async function enviarVenta(ev){
+  ev.preventDefault();
+  const m1=document.getElementById('metodo1').value, m2=document.getElementById('metodo2').value;
+  if((m1==='BS'||m2==='BS')&&!rawTasa){alert('Ingresa la tasa BCV');return false;}
+  const payload={data:{
+    fecha:new Date().toISOString().split('T')[0],
+    cliente:document.getElementById('cliente').value,
+    telefono:document.getElementById('telefono').value,
+    producto:document.getElementById('producto').value,
+    cantidad:parseFloat(document.getElementById('cantidad').value)||0,
+    precio_unitario:parseFloat(rawPrecio)||0,
+    total:parseFloat(document.getElementById('total').value)||0,
+    metodo_pago_1:m1,monto_pago_1:parseFloat(rawMonto1)||0,
+    metodo_pago_2:m2,monto_pago_2:parseFloat(rawMonto2)||0,
+    tasa_bcv:parseFloat(rawTasa)||0,
+    equivalente_usd_bs:round2((parseFloat(document.getElementById('abono').value)||0)-(parseFloat(rawMonto1)||0)),
+    abono:parseFloat(document.getElementById('abono').value)||0,
+    restante:parseFloat(document.getElementById('restante').value)||0,
+    asesor:document.getElementById('asesor').value,comentario:document.getElementById('comentario').value
+  }};
+  const res=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!res.ok){alert('Error al registrar');return false;}
+  alert('Venta registrada con éxito'); showSection('ventasMenu'); return false;
+}
+
+function renderClientes(){let html='<table><tr><th>Cliente</th><th>Teléfono</th></tr>'; Array.from(new Set(ventasData.map(v=>v.cliente))).forEach(name=>{const tel=ventasData.find(v=>v.cliente===name).telefono;html+=`<tr><td>${name}</td><td>${tel}</td></tr>`;});html+='</table>';document.getElementById('tablaClientes').innerHTML=html;}
+
+function renderDeudas(){let html='<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>'; ventasData.forEach(v=>{if(parseFloat(v.restante)>0)html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`;});html+='</table>';document.getElementById('tablaDeudas').innerHTML=html;}
+
+function renderInforme(){let html='<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>'; ventasData.forEach(v=>{html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2}</td><td>${v.monto_pago_2}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;});html+='</table>';document.getElementById('tablaVentas').innerHTML=html;}
+</script>
+</body>
+</html>
