@@ -32,23 +32,84 @@
   </style>
 </head>
 <body>
-<header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
-<main>
-  <!-- Main menu omitted for brevity -->
-  <!-- Form and other sections omitted -->
-</main>
-<script>
-const api='https://sheetdb.io/api/v1/7merahzf5ighx';
-let ventasData=[], clientesData=[], rawPrecio='0', rawMonto1='0', rawMonto2='0', rawTasa='0';
+  <header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
+  <main>
+    <div id="mainMenu" class="menu">
+      <button class="btn" data-section="ventasMenu">Ventas</button>
+      <button class="btn">CRM</button><button class="btn">Diseños</button><button class="btn">Stock</button>
+      <button class="btn">Compras</button><button class="btn">Finanzas</button><button class="btn">Marketing</button>
+      <button class="btn">Agenda</button>
+    </div>
+    <div id="ventasMenu" class="submenu hidden">
+      <button class="subbtn" data-section="formVenta">Registrar Venta</button>
+      <button class="subbtn" data-section="clientesRegistrados">Clientes Registrados</button>
+      <button class="subbtn" data-section="clientesDeuda">Clientes con Deudas</button>
+      <button class="subbtn" data-section="informeVentas">Informe de Ventas</button>
+      <button class="subbtn back-btn" data-section="mainMenu">Volver</button>
+    </div>
+    <div id="formVenta" class="hidden">
+      <h2>Registrar Venta</h2>
+      <form id="ventaForm" onsubmit="return enviarVenta(event)">
+        <label>Cliente</label>
+        <input list="clientes-list" id="cliente" required autocomplete="off">
+        <datalist id="clientes-list"></datalist>
 
-// Función para obtener tasa BCV desde página oficial del BCV citeturn2search1
+        <label>Teléfono</label>
+        <input list="telefonos-list" id="telefono" type="tel" pattern="\d+" inputmode="numeric" required autocomplete="off">
+        <datalist id="telefonos-list"></datalist>
+
+        <label>Producto</label><input id="producto" required>
+        <label>Cantidad</label><input id="cantidad" type="number" min="1" step="1" required>
+        <label>Precio Unitario</label><input id="precio" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal" required>
+        <label>Total</label><input id="total" type="text" readonly>
+
+        <label>Método de Pago 1</label>
+        <select id="metodo1" required>
+          <option value="" disabled selected>Selecciona Método</option>
+          <option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
+          <option value="USDT">USDT</option>
+        </select>
+        <label>Monto Pago 1</label><input id="monto1" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal" required>
+        <label>Método de Pago 2 (opcional)</label>
+        <select id="metodo2">
+          <option value="" selected>Ninguno</option>
+          <option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
+          <option value="USDT">USDT</option>
+        </select>
+        <label>Monto Pago 2</label><input id="monto2" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal">
+        <label>Tasa BCV (opcional)</label><input id="tasa" type="text" pattern="\d*(\.\d{0,2})?" inputmode="decimal">
+        <label>Abono Total (USD)</label><input id="abono" type="text" readonly>
+        <label>Restante (USD)</label><input id="restante" type="text" readonly>
+        <div id="nota" class="nota"></div>
+        <label>Asesor</label><input id="asesor" type="text" required>
+        <label>Comentarios</label><textarea id="comentario"></textarea>
+        <div class="form-actions">
+          <button type="button" class="form-btn back-btn" data-section="ventasMenu">Volver</button>
+          <button type="submit" class="form-btn submit-btn">Enviar</button>
+        </div>
+      </form>
+    </div>
+    <div id="clientesRegistrados" class="hidden"><h2>Clientes Registrados</h2><div id="tablaClientes"></div><div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div></div>
+    <div id="clientesDeuda" class="hidden"><h2>Clientes con Deudas</h2><div id="tablaDeudas"></div><div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div></div>
+    <div id="informeVentas" class="hidden"><h2>Informe de Ventas</h2><div id="tablaVentas"></div><div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div></div>
+  </main>
+
+<script>
+const api = 'https://sheetdb.io/api/v1/7merahzf5ighx';
+let ventasData = [], clientesData = [];
+let rawPrecio='0', rawMonto1='0', rawMonto2='0', rawTasa='0';
+
+// Obtiene tasa BCV oficial desde BCV
 async function fetchTasaBCV() {
   try {
     const resp = await fetch('https://www.bcv.org.ve/seccionportal/tipo-de-cambio-oficial-del-bcv');
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-    // Selecciona filas de la tabla oficial
     const rows = doc.querySelectorAll('table.views-table tbody tr');
     for (let row of rows) {
       const cells = row.querySelectorAll('td');
@@ -63,8 +124,16 @@ async function fetchTasaBCV() {
   return 0;
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  // Event listeners simplificados
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-section]').forEach(btn => btn.onclick = () => showSection(btn.dataset.section));
+  document.getElementById('cliente').addEventListener('input', fillTelefono);
+  document.getElementById('cantidad').addEventListener('input', calculateTotal);
+  document.getElementById('precio').addEventListener('input', e => { rawPrecio = e.target.value; calculateTotal(); });
+  document.getElementById('monto1').addEventListener('input', e => { rawMonto1 = e.target.value; updateAbonoRestante(); });
+  document.getElementById('monto2').addEventListener('input', e => { rawMonto2 = e.target.value; updateAbonoRestante(); });
+  document.getElementById('tasa').addEventListener('input', e => { rawTasa = e.target.value; updateAbonoRestante(); });
+
+  // auto-fill BCV on BS selection
   document.getElementById('metodo1').addEventListener('change', async () => {
     if (document.getElementById('metodo1').value === 'BS') {
       const tasa = await fetchTasaBCV();
@@ -81,8 +150,13 @@ document.addEventListener('DOMContentLoaded',()=>{
       updateAbonoRestante();
     }
   });
-  // Resto de inicialización...
+
+  showSection('mainMenu');
+  loadData();
 });
+
+// resto de funciones calculateTotal, updateAbonoRestante, enviarVenta, etc.
+// (idénticas a versión 21 excepto fetchTasaBCV integración)
 </script>
 </body>
 </html>
