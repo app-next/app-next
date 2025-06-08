@@ -33,7 +33,7 @@
       text-align: center;
       margin-bottom: 1.5rem;
     }
-    .menu, .submenu {
+    .menu, .submenu, .formulario {
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -51,8 +51,18 @@
     button:hover {
       background: #001bb3;
     }
+    input, select {
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
     .hidden {
       display: none;
+    }
+    .totales {
+      font-weight: bold;
+      text-align: right;
     }
   </style>
 </head>
@@ -64,7 +74,7 @@
   <main id="menuPrincipal">
     <h2>MENÚ PRINCIPAL</h2>
     <div class="menu">
-      <button onclick="abrirModulo('ventas')">Ventas</button>
+      <button onclick="abrirSubmenu()">Ventas</button>
       <button onclick="alert('CRM en desarrollo')">CRM</button>
       <button onclick="alert('Finanzas en desarrollo')">Finanzas</button>
       <button onclick="alert('Compras en desarrollo')">Compras</button>
@@ -80,24 +90,79 @@
   <main id="subMenuVentas" class="hidden">
     <h2>VENTAS</h2>
     <div class="submenu">
-      <button onclick="window.location.href='https://app-next.vercel.app/registrar-venta'">Registrar venta</button>
-      <button onclick="window.location.href='https://app-next.vercel.app/clientes-registrados'">Clientes registrados</button>
-      <button onclick="window.location.href='https://app-next.vercel.app/clientes-con-deudas'">Clientes con deudas</button>
-      <button onclick="window.location.href='https://app-next.vercel.app/informe-de-ventas'">Informe de ventas</button>
+      <button onclick="mostrarFormulario()">Registrar venta</button>
+      <button onclick="alert('Clientes registrados funcional en conexión')">Clientes registrados</button>
+      <button onclick="alert('Clientes con deudas funcional en conexión')">Clientes con deudas</button>
+      <button onclick="alert('Informe de ventas funcional en conexión')">Informe de ventas</button>
       <button onclick="volverMenu()">⬅ Volver al menú principal</button>
     </div>
   </main>
 
+  <main id="formularioVenta" class="hidden">
+    <h2>REGISTRAR VENTA</h2>
+    <div class="formulario">
+      <input type="text" id="cliente" placeholder="Nombre del cliente" oninput="autocompletar()">
+      <input type="text" id="telefono" placeholder="Teléfono">
+      <input type="text" id="producto" placeholder="Producto">
+      <input type="number" id="cantidad" placeholder="Cantidad" oninput="calcularTotal()">
+      <input type="number" id="precio" placeholder="Precio unitario" oninput="calcularTotal()">
+      <div class="totales">Total: <span id="total">0</span></div>
+      <input type="number" id="abono" placeholder="Abono" oninput="calcularRestante()">
+      <div class="totales">Restante: <span id="restante">0</span></div>
+      <select id="forma_pago">
+        <option value="">Forma de pago</option>
+        <option>Efectivo</option>
+        <option>Zinli</option>
+        <option>Pago Móvil</option>
+        <option>USDT</option>
+      </select>
+      <select id="divisa">
+        <option value="">Divisa</option>
+        <option>USD</option>
+        <option>Bs</option>
+      </select>
+      <input type="text" id="asesor" placeholder="Asesor">
+      <textarea id="comentario" placeholder="Comentario"></textarea>
+      <button onclick="enviarFormulario()">Enviar</button>
+      <button onclick="volverSubmenu()">⬅ Volver al submenú</button>
+    </div>
+  </main>
+
   <script>
-    function abrirModulo(modulo) {
+    function abrirSubmenu() {
       document.getElementById('menuPrincipal').classList.add('hidden');
-      if(modulo === 'ventas') {
-        document.getElementById('subMenuVentas').classList.remove('hidden');
-      }
+      document.getElementById('subMenuVentas').classList.remove('hidden');
     }
     function volverMenu() {
       document.getElementById('subMenuVentas').classList.add('hidden');
       document.getElementById('menuPrincipal').classList.remove('hidden');
+    }
+    function mostrarFormulario() {
+      document.getElementById('subMenuVentas').classList.add('hidden');
+      document.getElementById('formularioVenta').classList.remove('hidden');
+    }
+    function volverSubmenu() {
+      document.getElementById('formularioVenta').classList.add('hidden');
+      document.getElementById('subMenuVentas').classList.remove('hidden');
+    }
+    function calcularTotal() {
+      const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+      const precio = parseFloat(document.getElementById('precio').value) || 0;
+      const total = cantidad * precio;
+      document.getElementById('total').textContent = total.toFixed(2);
+      calcularRestante();
+    }
+    function calcularRestante() {
+      const total = parseFloat(document.getElementById('total').textContent) || 0;
+      const abono = parseFloat(document.getElementById('abono').value) || 0;
+      const restante = total - abono;
+      document.getElementById('restante').textContent = restante.toFixed(2);
+    }
+    function autocompletar() {
+      // Aquí se puede conectar con registros previos si se desea
+    }
+    function enviarFormulario() {
+      alert("Aquí se enviará el formulario a SheetDB");
     }
   </script>
 </body>
