@@ -30,6 +30,7 @@
     }
     header .logo {
       height: 40px;
+      object-fit: contain;
     }
     main {
       padding: 1rem;
@@ -131,6 +132,9 @@
         <input list="telefonos-list" id="telefono" placeholder="Número telefónico" required />
         <datalist id="telefonos-list"></datalist>
 
+        <label>Producto:</label>
+        <input type="text" id="producto" placeholder="Nombre del producto" required />
+
         <label>Cantidad:</label>
         <input type="number" id="cantidad" placeholder="Cantidad" min="1" required />
 
@@ -140,20 +144,34 @@
         <label>Total:</label>
         <input type="number" id="total" readonly placeholder="Total calculado" />
 
-        <label>Método de Pago:</label>
-        <select id="metodo_pago" required>
+        <label>Método de Pago 1:</label>
+        <select id="metodo1" required>
           <option value="Efectivo_$">Efectivo $</option>
-          <option value="Efectivo_Bs">Efectivo Bs</option>
-          <option value="ZINLI">ZINLI</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
           <option value="USDT">USDT</option>
-          <option value="Pago_Móvil">Pago Móvil</option>
         </select>
 
-        <label>Tasa BCV (solo Bs):</label>
+        <label>Monto Pago 1:</label>
+        <input type="number" id="monto1" placeholder="Monto pago 1" min="0" step="0.01" required />
+
+        <label>Método de Pago 2 (opcional):</label>
+        <select id="metodo2">
+          <option value="">Ninguno</option>
+          <option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
+          <option value="USDT">USDT</option>
+        </select>
+
+        <label>Monto Pago 2:</label>
+        <input type="number" id="monto2" placeholder="Monto pago 2" min="0" step="0.01" />
+
+        <label>Tasa BCV (solo BS):</label>
         <input type="number" id="tasa" readonly placeholder="Tasa BCV" />
 
-        <label>Abono:</label>
-        <input type="number" id="abono" placeholder="Abono realizado" min="0" step="0.01" />
+        <label>Abono Total:</label>
+        <input type="number" id="abono" readonly placeholder="Suma de pagos" />
 
         <label>Restante:</label>
         <input type="number" id="restante" readonly placeholder="Monto restante" />
@@ -210,94 +228,109 @@
       try {
         const res = await fetch(sheetdbEndpoint);
         ventasData = await res.json();
-        // datos para autocompletar
-        clientesData = ventasData.map(v => ({
-          cliente: v.cliente,
-          telefono: v.telefono
-        }));
+        clientesData = ventasData.map(v => ({ cliente: v.cliente, telefono: v.telefono }));
         populateDatalists();
       } catch(e) {
         console.error('Error cargando datos:', e);
       }
     }
 
-    // Autocomplete clientes y teléfonos
+    // Autocomplete
     function populateDatalists() {
       const uniqueClientes = [...new Set(clientesData.map(c => c.cliente))];
       const uniqueTels = [...new Set(clientesData.map(c => c.telefono))];
-      const dlC = document.getElementById('clientes-list');
-      const dlT = document.getElementById('telefonos-list');
-      dlC.innerHTML = uniqueClientes.map(n => `<option value="${n}">`).join('');
-      dlT.innerHTML = uniqueTels.map(t => `<option value="${t}">`).join('');
+      document.getElementById('clientes-list').innerHTML = uniqueClientes.map(n => `<option value="${n}">`).join('');
+      document.getElementById('telefonos-list').innerHTML = uniqueTels.map(t => `<option value="${t}">`).join('');
     }
     document.getElementById('cliente').addEventListener('change', () => {
       const sel = clientesData.find(c => c.cliente === document.getElementById('cliente').value);
       if (sel) document.getElementById('telefono').value = sel.telefono;
     });
 
-    // Cálculo total y restante
+    // Cálculos
     function updateTotal() {
       const c = parseFloat(document.getElementById('cantidad').value) || 0;
       const p = parseFloat(document.getElementById('precio').value) || 0;
-      const tot = c * p;
-      document.getElementById('total').value = tot.toFixed(2);
-      updateRestante();
+      document.getElementById('total').value = (c * p).toFixed(2);
+      updateValores();
     }
-    function updateRestante() {
-      const tot = parseFloat(document.getElementById('total').value) || 0;
-      const ab = parseFloat(document.getElementById('abono').value) || 0;
-      document.getElementById('restante').value = (tot - ab).toFixed(2);
+    function fetchTasa() {
+      fetch('https://s3.amazonaws.com/dolartoday/data.json')
+        .then(r => r.json())
+        .then(json => {
+          const rate = json.USD.promedio_real || json.USD.transferencia;
+          document.getElementById('tasa').value = parseFloat(rate).toFixed(2);
+          updateValores();
+        })
+        .catch(console.error);
     }
+    document.getElementById('metodo1').addEventListener('change', e => {
+      if (e.target.value === 'BS') fetchTasa();
+      else { document.getElementById('tasa').value = ''; updateValores(); }
+    });
+    document.getElementById('monto1').addEventListener('input', updateValores);
+    document.getElementById('metodo2').addEventListener('change', e => {
+      if (e.target.value === 'BS') fetchTasa();
+      else { document.getElementById('tasa').value = ''; updateValores(); }
+    });
+    document.getElementById('monto2').addEventListener('input', updateValores);
     document.getElementById('cantidad').addEventListener('input', updateTotal);
     document.getElementById('precio').addEventListener('input', updateTotal);
-    document.getElementById('abono').addEventListener('input', updateRestante);
 
-    // Obtener tasa BCV
-    async function fetchTasa() {
-      try {
-        const res = await fetch('https://s3.amazonaws.com/dolartoday/data.json');
-        const json = await res.json();
-        const tasa = json.USD.promedio_real || json.USD.transferencia;
-        document.getElementById('tasa').value = parseFloat(tasa).toFixed(2);
-        updateRestante();
-      } catch(e) {
-        console.error('Error al consultar BCV:', e);
-      }
+    function updateValores() {
+      const montos = [
+        { met: document.getElementById('metodo1').value, val: parseFloat(document.getElementById('monto1').value) || 0 },
+        { met: document.getElementById('metodo2').value, val: parseFloat(document.getElementById('monto2').value) || 0 }
+      ];
+      const tasa = parseFloat(document.getElementById('tasa').value) || 0;
+      const abonoTotal = montos[0].val + montos[1].val;
+      let eqUsdBs = 0;
+      montos.forEach(m => {
+        if (m.met === 'BS' && tasa > 0) eqUsdBs += m.val / tasa;
+      });
+      document.getElementById('abono').value = abonoTotal.toFixed(2);
+      document.getElementById('restante').value = (parseFloat(document.getElementById('total').value) - abonoTotal).toFixed(2);
+      // You could display eqUsdBs if needed; currently just used in data
     }
-    document.getElementById('metodo_pago').addEventListener('change', e => {
-      if (e.target.value === 'Efectivo_Bs') {
-        fetchTasa();
-      } else {
-        document.getElementById('tasa').value = '';
-        updateRestante();
-      }
-    });
 
-    // Enviar venta a Google Sheets
+    // Enviar a Sheets
     async function enviarVenta(ev) {
       ev.preventDefault();
-      const data = {
+      const monto1 = parseFloat(document.getElementById('monto1').value) || 0;
+      const monto2 = parseFloat(document.getElementById('monto2').value) || 0;
+      const tasa = parseFloat(document.getElementById('tasa').value) || 0;
+      let eqUsdBs = 0;
+      [ { met: document.getElementById('metodo1').value, val: monto1 },
+        { met: document.getElementById('metodo2').value, val: monto2 }
+      ].forEach(m => { if (m.met === 'BS' && tasa>0) eqUsdBs += m.val / tasa; });
+      const dataToSend = {
         data: {
           fecha: new Date().toISOString().split('T')[0],
           cliente: document.getElementById('cliente').value,
           telefono: document.getElementById('telefono').value,
+          producto: document.getElementById('producto').value,
           cantidad: parseFloat(document.getElementById('cantidad').value),
           precio_unitario: parseFloat(document.getElementById('precio').value),
           total: parseFloat(document.getElementById('total').value),
-          metodo_pago: document.getElementById('metodo_pago').value,
-          tasa: parseFloat(document.getElementById('tasa').value) || 0,
-          abono: parseFloat(document.getElementById('abono').value) || 0,
+          metodo_pago_1: document.getElementById('metodo1').value,
+          monto_pago_1: monto1,
+          metodo_pago_2: document.getElementById('metodo2').value || '',
+          monto_pago_2: monto2,
+          tasa_bcv: tasa,
+          equivalente_usd_bs: parseFloat(eqUsdBs.toFixed(2)),
+          abono: monto1 + monto2,
           restante: parseFloat(document.getElementById('restante').value),
           asesor: document.getElementById('asesor').value,
           comentario: document.getElementById('comentario').value
         }
       };
       try {
-        await fetch(sheetdbEndpoint, {
+        const res = await fetch(sheetdbEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          body: JSON.stringify(dataToSend)
         });
+        if (!res.ok) throw new Error('Error HTTP ' + res.status);
         alert('Venta registrada con éxito');
         await loadData();
         showSection('ventasMenu');
@@ -307,6 +340,7 @@
       }
     }
 
+    // Tablas
     function renderClientes() {
       const unique = [];
       ventasData.forEach(v => {
@@ -315,33 +349,42 @@
         }
       });
       let html = '<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
-      unique.forEach(c => {
-        html += `<tr><td>${c.cliente}</td><td>${c.telefono}</td></tr>`;
-      });
+      unique.forEach(c => html += `<tr><td>${c.cliente}</td><td>${c.telefono}</td></tr>`);
       html += '</table>';
       document.getElementById('tablaClientes').innerHTML = html;
     }
     function renderDeudas() {
       const conDeuda = ventasData.filter(v => parseFloat(v.restante) > 0);
       let html = '<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>';
-      conDeuda.forEach(v => {
-        html += `<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`;
-      });
+      conDeuda.forEach(v => html += `<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`);
       html += '</table>';
       document.getElementById('tablaDeudas').innerHTML = html;
     }
     function renderInforme() {
-      let html = '<table><tr><th>Fecha</th><th>Cliente</th><th>Cant.</th><th>Precio</th><th>Total</th><th>Pago</th><th>Abono</th><th>Restante</th></tr>';
+      let html = '<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>Pago1</th><th>Monto1</th><th>Pago2</th><th>Monto2</th><th>Tasa</th><th>Eq USD</th><th>Abono</th><th>Restante</th></tr>';
       ventasData.forEach(v => {
-        html += `<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;
+        html += `<tr>
+          <td>${v.fecha}</td>
+          <td>${v.cliente}</td>
+          <td>${v.producto}</td>
+          <td>${v.cantidad}</td>
+          <td>${v.precio_unitario}</td>
+          <td>${v.total}</td>
+          <td>${v.metodo_pago_1}</td>
+          <td>${v.monto_pago_1}</td>
+          <td>${v.metodo_pago_2 || ''}</td>
+          <td>${v.monto_pago_2 || ''}</td>
+          <td>${v.tasa_bcv}</td>
+          <td>${v.equivalente_usd_bs}</td>
+          <td>${v.abono}</td>
+          <td>${v.restante}</td>
+        </tr>`;
       });
       html += '</table>';
       document.getElementById('tablaVentas').innerHTML = html;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      loadData();
-    });
+    window.addEventListener('DOMContentLoaded', () => { loadData(); });
   </script>
 </body>
 </html>
