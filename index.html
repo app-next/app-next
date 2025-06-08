@@ -3,66 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NEXT Dashboard</title>
+  <title>APP NEXT</title>
   <style>
     :root {
       --black: #000;
       --white: #fff;
       --blue: #0033A0;
       --yellow: #FFD700;
-      --gray-bg: #f0f2f5;
-      --card-bg: #fff;
+      --gray-bg: #f5f5f5;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
       background: var(--gray-bg);
       color: var(--black);
-      line-height: 1.4;
     }
     header {
       background: var(--black);
-      padding: 0.5rem;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 60px;
     }
     header .logo {
-      height: 50px;
+      height: 40px;
+      object-fit: contain;
     }
     main {
-      max-width: 1000px;
-      margin: 1rem auto;
-      background: var(--card-bg);
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 1.5rem;
+      padding: 1rem;
+      max-width: 900px;
+      margin: auto;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .menu, .submenu {
       display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
-    .menu {
-      justify-content: space-between;
-    }
-    .submenu {
-      justify-content: center;
-    }
-    .btn, .subbtn, button {
-      flex: 1 1 150px;
+    .menu .btn, .submenu .subbtn {
+      flex: 1;
       min-width: 120px;
-      padding: 0.75rem;
+      height: 40px;
       background: var(--blue);
       color: var(--white);
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .btn:hover, .subbtn:hover, button:hover {
+    .menu .btn:hover, .submenu .subbtn:hover {
       background: var(--yellow);
       color: var(--black);
     }
@@ -71,38 +67,53 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      width: 100%;
+      max-width: 500px;
+      margin: auto;
     }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-    label {
+    form label {
+      margin-bottom: 0.2rem;
       font-size: 0.9rem;
-      color: #333;
+      font-weight: 500;
     }
     input, select, textarea {
-      padding: 0.5rem;
-      border: 1px solid #ccc;
+      padding: 0.6rem;
       border-radius: 6px;
+      border: 1px solid #ccc;
       font-size: 1rem;
       width: 100%;
     }
     input[readonly] {
-      background: #f5f5f5;
+      background: #eee;
     }
-    .back-btn {
-      background: #555;
+    .form-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1rem;
     }
-    .back-btn:hover {
+    .form-actions .form-btn {
+      flex: 0 0 120px;
+      height: 40px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .form-actions .submit-btn {
+      background: var(--blue);
+      color: var(--white);
+    }
+    .form-actions .submit-btn:hover {
       background: var(--yellow);
       color: var(--black);
     }
-    h2 {
-      margin-bottom: 0.75rem;
-      font-size: 1.2rem;
-      color: #222;
+    .form-actions .back-btn {
+      background: #444;
+      color: var(--white);
+    }
+    .form-actions .back-btn:hover {
+      background: var(--yellow);
+      color: var(--black);
     }
     table {
       width: 100%;
@@ -110,14 +121,9 @@
       margin-top: 0.5rem;
     }
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       padding: 0.5rem;
       text-align: left;
-      font-size: 0.9rem;
-    }
-    th {
-      background: var(--blue);
-      color: var(--white);
     }
   </style>
 </head>
@@ -126,6 +132,7 @@
     <img src="logo.png" alt="NEXT Logo" class="logo" />
   </header>
   <main>
+    <!-- Menú Principal -->
     <div id="mainMenu" class="menu">
       <button class="btn" onclick="showSection('ventasMenu')">Ventas</button>
       <button class="btn">CRM</button>
@@ -138,133 +145,132 @@
       <button class="btn">Reportes</button>
     </div>
 
+    <!-- Submenú Ventas -->
     <div id="ventasMenu" class="submenu hidden">
       <button class="subbtn" onclick="showSection('formVenta')">Registrar Venta</button>
       <button class="subbtn" onclick="showSection('clientesRegistrados')">Clientes Registrados</button>
       <button class="subbtn" onclick="showSection('clientesDeuda')">Clientes con Deudas</button>
       <button class="subbtn" onclick="showSection('informeVentas')">Informe de Ventas</button>
-      <button class="subbtn back-btn" onclick="showSection('mainMenu')">Menú Principal</button>
+      <button class="subbtn back-btn" onclick="showSection('mainMenu')">Volver</button>
     </div>
 
+    <!-- Formulario Registrar Venta -->
     <div id="formVenta" class="hidden">
       <h2>Registrar Venta</h2>
       <form onsubmit="enviarVenta(event)">
-        <div class="form-group">
-          <label for="cliente">Cliente</label>
-          <input list="clientes-list" id="cliente" placeholder="Nombre del cliente" required />
-          <datalist id="clientes-list"></datalist>
+        <label for="cliente">Cliente</label>
+        <input list="clientes-list" id="cliente" placeholder="Nombre del cliente" required />
+        <datalist id="clientes-list"></datalist>
+
+        <label for="telefono">Teléfono</label>
+        <input list="telefonos-list" id="telefono" placeholder="Número telefónico" required />
+        <datalist id="telefonos-list"></datalist>
+
+        <label for="producto">Producto</label>
+        <input type="text" id="producto" placeholder="Nombre del producto" required />
+
+        <label for="cantidad">Cantidad</label>
+        <input type="number" id="cantidad" placeholder="Cantidad" min="1" required />
+
+        <label for="precio">Precio Unitario</label>
+        <input type="number" id="precio" placeholder="Precio unitario" min="0.01" step="0.01" required />
+
+        <label for="total">Total</label>
+        <input type="number" id="total" readonly placeholder="Total calculado" />
+
+        <label for="metodo1">Método de Pago 1</label>
+        <select id="metodo1" required>
+          <option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
+          <option value="USDT">USDT</option>
+        </select>
+
+        <label for="monto1">Monto Pago 1</label>
+        <input type="number" id="monto1" placeholder="0.00" min="0" step="0.01" required />
+
+        <label for="metodo2">Método de Pago 2 (opcional)</label>
+        <select id="metodo2">
+          <option value="">Ninguno</option>
+          <option value="Efectivo_$">Efectivo $</option>
+          <option value="BS">BS</option>
+          <option value="Zinli">Zinli</option>
+          <option value="USDT">USDT</option>
+        </select>
+
+        <label for="monto2">Monto Pago 2</label>
+        <input type="number" id="monto2" placeholder="0.00" min="0" step="0.01" />
+
+        <label for="tasa">Tasa BCV (para BS)</label>
+        <input type="number" id="tasa" readonly placeholder="Cargando..." />
+
+        <label for="abono">Abono Total (USD)</label>
+        <input type="number" id="abono" readonly placeholder="0.00" />
+
+        <label for="restante">Restante (USD)</label>
+        <input type="number" id="restante" readonly placeholder="0.00" />
+
+        <label for="asesor">Asesor</label>
+        <input type="text" id="asesor" placeholder="Nombre del asesor" required />
+
+        <label for="comentario">Comentarios</label>
+        <textarea id="comentario" rows="3" placeholder="Comentarios adicionales"></textarea>
+
+        <div class="form-actions">
+          <button type="button" class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
+          <button type="submit" class="form-btn submit-btn">Enviar</button>
         </div>
-        <div class="form-group">
-          <label for="telefono">Teléfono</label>
-          <input list="telefonos-list" id="telefono" placeholder="Número telefónico" required />
-          <datalist id="telefonos-list"></datalist>
-        </div>
-        <div class="form-group">
-          <label for="producto">Producto</label>
-          <input type="text" id="producto" placeholder="Nombre del producto" required />
-        </div>
-        <div class="form-group">
-          <label for="cantidad">Cantidad</label>
-          <input type="number" id="cantidad" placeholder="Cantidad" min="1" required />
-        </div>
-        <div class="form-group">
-          <label for="precio">Precio Unitario ($)</label>
-          <input type="number" id="precio" placeholder="Precio unitario" min="0" step="0.01" required />
-        </div>
-        <div class="form-group">
-          <label for="total">Total ($)</label>
-          <input type="number" id="total" readonly />
-        </div>
-        <div class="form-group">
-          <label for="metodo1">Método de Pago 1</label>
-          <select id="metodo1" required>
-            <option value="Efectivo_$">Efectivo $</option>
-            <option value="BS">BS</option>
-            <option value="Zinli">Zinli</option>
-            <option value="USDT">USDT</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="monto1">Monto Pago 1</label>
-          <input type="number" id="monto1" placeholder="0.00" min="0" step="0.01" required />
-        </div>
-        <div class="form-group">
-          <label for="metodo2">Método de Pago 2 (opcional)</label>
-          <select id="metodo2">
-            <option value="">Ninguno</option>
-            <option value="Efectivo_$">Efectivo $</option>
-            <option value="BS">BS</option>
-            <option value="Zinli">Zinli</option>
-            <option value="USDT">USDT</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="monto2">Monto Pago 2</label>
-          <input type="number" id="monto2" placeholder="0.00" min="0" step="0.01" />
-        </div>
-        <div class="form-group">
-          <label for="tasa">Tasa BCV (para BS)</label>
-          <input type="number" id="tasa" readonly />
-        </div>
-        <div class="form-group">
-          <label for="abono">Abono Total (USD)</label>
-          <input type="number" id="abono" readonly />
-        </div>
-        <div class="form-group">
-          <label for="restante">Restante (USD)</label>
-          <input type="number" id="restante" readonly />
-        </div>
-        <div class="form-group"> 
-          <label for="asesor">Asesor</label>
-          <input type="text" id="asesor" placeholder="Nombre del asesor" required />
-        </div>
-        <div class="form-group">
-          <label for="comentario">Comentarios</label>
-          <textarea id="comentario" rows="3"></textarea>
-        </div>
-        <button type="submit">Enviar</button>
-        <button type="button" class="back-btn" onclick="showSection('ventasMenu')">Volver</button>
       </form>
     </div>
 
+    <!-- Clientes Registrados -->
     <div id="clientesRegistrados" class="hidden">
       <h2>Clientes Registrados</h2>
       <div id="tablaClientes"></div>
-      <button class="back-btn" onclick="showSection('ventasMenu')">Volver</button>
+      <div class="form-actions">
+        <button class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
+      </div>
     </div>
 
+    <!-- Clientes con Deudas -->
     <div id="clientesDeuda" class="hidden">
       <h2>Clientes con Deudas</h2>
       <div id="tablaDeudas"></div>
-      <button class="back-btn" onclick="showSection('ventasMenu')">Volver</button>
+      <div class="form-actions">
+        <button class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
+      </div>
     </div>
 
+    <!-- Informe de Ventas -->
     <div id="informeVentas" class="hidden">
       <h2>Informe de Ventas</h2>
       <div id="tablaVentas"></div>
-      <button class="back-btn" onclick="showSection('ventasMenu')">Volver</button>
+      <div class="form-actions">
+        <button class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
+      </div>
     </div>
   </main>
 
   <script>
     const sheetdbEndpoint = 'https://sheetdb.io/api/v1/7merahzf5ighx';
-    let ventasData = [], clientesData = [];
+    let ventasData = [], clientesData = [], latestRate = 0;
 
     function showSection(id) {
-      document.querySelectorAll('main > div').forEach(el=>el.classList.add('hidden'));
+      document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
-      if(id==='clientesRegistrados') renderClientes();
-      if(id==='clientesDeuda') renderDeudas();
-      if(id==='informeVentas') renderInforme();
+      if (id === 'formVenta') fetchTasa();
+      if (id === 'clientesRegistrados') renderClientes();
+      if (id === 'clientesDeuda') renderDeudas();
+      if (id === 'informeVentas') renderInforme();
     }
 
-    async function loadData(){
+    async function loadData() {
       try {
         const res = await fetch(sheetdbEndpoint);
         ventasData = await res.json();
         clientesData = ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
         populateDatalists();
-      } catch(e){ console.error(e); }
+      } catch(e) { console.error(e); }
     }
 
     function populateDatalists(){
@@ -273,13 +279,12 @@
       document.getElementById('clientes-list').innerHTML = ulC.map(n=>`<option value="${n}">`).join('');
       document.getElementById('telefonos-list').innerHTML = ulT.map(t=>`<option value="${t}">`).join('');
     }
-
-    document.getElementById('cliente').addEventListener('change',()=>{
+    document.getElementById('cliente').addEventListener('change', ()=>{
       const sel = clientesData.find(c=>c.cliente===document.getElementById('cliente').value);
-      if(sel) document.getElementById('telefono').value = sel.telefono;
+      if (sel) document.getElementById('telefono').value = sel.telefono;
     });
 
-    function updateTotal(){ 
+    function updateTotal(){
       const c = parseFloat(document.getElementById('cantidad').value)||0;
       const p = parseFloat(document.getElementById('precio').value)||0;
       document.getElementById('total').value = (c*p).toFixed(2);
@@ -287,102 +292,118 @@
     }
 
     async function fetchTasa(){
+      document.getElementById('tasa').placeholder = 'Cargando...';
       try {
         const r = await fetch('https://s3.amazonaws.com/dolartoday/data.json');
         const j = await r.json();
-        const rate = j.USD.promedio_real||j.USD.transferencia;
-        document.getElementById('tasa').value = parseFloat(rate).toFixed(2);
-        updateValores();
-      } catch(e){ console.error(e); }
+        const rate = j.USD.promedio_real || j.USD.transferencia;
+        latestRate = parseFloat(rate);
+        document.getElementById('tasa').value = latestRate.toFixed(2);
+      } catch(e) {
+        console.error(e);
+        document.getElementById('tasa').placeholder = 'Error';
+      }
+      updateValores();
     }
 
     ['metodo1','metodo2'].forEach(id=>{
-      document.getElementById(id).addEventListener('change',e=>{
-        if(e.target.value==='BS') fetchTasa();
-        else { document.getElementById('tasa').value = ''; updateValores(); }
-      });
+      document.getElementById(id).addEventListener('change', updateValores);
     });
-
     ['cantidad','precio','monto1','monto2'].forEach(id=>{
-      const fn = (id==='cantidad'||id==='precio')?updateTotal:updateValores;
-      document.getElementById(id).addEventListener('input', fn);
+      document.getElementById(id).addEventListener('input',
+        id==='cantidad'||id==='precio' ? updateTotal : updateValores
+      );
     });
 
     function updateValores(){
       const total = parseFloat(document.getElementById('total').value)||0;
-      const tasa = parseFloat(document.getElementById('tasa').value)||0;
-      let abono = 0;
-      const pagos = [
-        {met:document.getElementById('metodo1').value, val:parseFloat(document.getElementById('monto1').value)||0},
-        {met:document.getElementById('metodo2').value, val:parseFloat(document.getElementById('monto2').value)||0}
-      ];
-      pagos.forEach(p=>{
-        abono += (p.met==='BS' && tasa>0)? p.val/tasa : p.val;
+      const tasa = latestRate;
+      let abonoUsd=0;
+      [
+        {met:document.getElementById('metodo1').value,val:parseFloat(document.getElementById('monto1').value)||0},
+        {met:document.getElementById('metodo2').value,val:parseFloat(document.getElementById('monto2').value)||0}
+      ].forEach(p=>{
+        abonoUsd += p.met==='BS' && tasa>0 ? p.val/tasa : p.val;
       });
-      document.getElementById('abono').value = abono.toFixed(2);
-      document.getElementById('restante').value = (total - abono).toFixed(2);
+      document.getElementById('abono').value = abonoUsd.toFixed(2);
+      document.getElementById('restante').value = (total - abonoUsd).toFixed(2);
     }
 
     async function enviarVenta(ev){
       ev.preventDefault();
-      const tasa = parseFloat(document.getElementById('tasa').value)||0;
-      let eqUsdBs = 0;
-      ['metodo1','metodo2'].forEach((id,i)=>{
-        const met = document.getElementById(id).value;
-        const val = parseFloat(document.getElementById('monto'+(i+1)).value)||0;
+      const tasa = latestRate;
+      let eqUsdBs=0;
+      [{id:'metodo1',amt:'monto1'},{id:'metodo2',amt:'monto2'}].forEach(o=>{
+        const met = document.getElementById(o.id).value;
+        const val = parseFloat(document.getElementById(o.amt).value)||0;
         if(met==='BS' && tasa>0) eqUsdBs += val/tasa;
       });
       const abono = parseFloat(document.getElementById('abono').value)||0;
-      const payload = {
-        data:{
-          fecha: new Date().toISOString().split('T')[0],
-          cliente: document.getElementById('cliente').value,
-          telefono: document.getElementById('telefono').value,
-          producto: document.getElementById('producto').value,
-          cantidad: parseFloat(document.getElementById('cantidad').value),
-          precio_unitario: parseFloat(document.getElementById('precio').value),
-          total: parseFloat(document.getElementById('total').value),
-          metodo_pago_1: document.getElementById('metodo1').value,
-          monto_pago_1: parseFloat(document.getElementById('monto1').value)||0,
-          metodo_pago_2: document.getElementById('metodo2').value||"",
-          monto_pago_2: parseFloat(document.getElementById('monto2').value)||0,
-          tasa_bcv: tasa,
-          equivalente_usd_bs: parseFloat(eqUsdBs.toFixed(2)),
-          abono: abono,
-          restante: parseFloat(document.getElementById('restante').value),
-          asesor: document.getElementById('asesor').value,
-          comentario: document.getElementById('comentario').value
-        }
-      };
+      const payload = { data: {
+        fecha:new Date().toISOString().split('T')[0],
+        cliente:document.getElementById('cliente').value,
+        telefono:document.getElementById('telefono').value,
+        producto:document.getElementById('producto').value,
+        cantidad:parseFloat(document.getElementById('cantidad').value),
+        precio_unitario:parseFloat(document.getElementById('precio').value),
+        total:parseFloat(document.getElementById('total').value),
+        metodo_pago_1:document.getElementById('metodo1').value,
+        monto_pago_1:parseFloat(document.getElementById('monto1').value)||0,
+        metodo_pago_2:document.getElementById('metodo2').value||'',
+        monto_pago_2:parseFloat(document.getElementById('monto2').value)||0,
+        tasa_bcv:tasa,
+        equivalente_usd_bs:parseFloat(eqUsdBs.toFixed(2)),
+        abono:abono,
+        restante:parseFloat(document.getElementById('restante').value),
+        asesor:document.getElementById('asesor').value,
+        comentario:document.getElementById('comentario').value
+      }};
       try {
-        const res = await fetch(sheetdbEndpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-        if(!res.ok) throw new Error(res.status);
+        const res = await fetch(sheetdbEndpoint, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error('HTTP '+res.status);
         alert('Venta registrada con éxito');
         await loadData();
         showSection('ventasMenu');
-      } catch(e){ console.error(e); alert('Error al registrar la venta'); }
+      } catch(e) {
+        console.error(e);
+        alert('Error al registrar la venta');
+      }
     }
 
     function renderClientes(){
-      const u = [];
-      ventasData.forEach(v=>{ if(!u.find(x=>x.cliente===v.cliente)) u.push({cliente:v.cliente,telefono:v.telefono}); });
-      let html="<table><tr><th>Cliente</th><th>Teléfono</th></tr>";
-      u.forEach(c=> html+=`<tr><td>${c.cliente}</td><td>${c.telefono}</td></tr>`);
-      html+="</table>"; document.getElementById('tablaClientes').innerHTML=html;
+      const uniq=[];
+      ventasData.forEach(v=>{
+        if(!uniq.find(u=>u.cliente===v.cliente))
+          uniq.push({cliente:v.cliente,telefono:v.telefono});
+      });
+      let html='<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
+      uniq.forEach(c=>html+=`<tr><td>${c.cliente}</td><td>${c.telefono}</td></tr>`);
+      html+='</table>';
+      document.getElementById('tablaClientes').innerHTML=html;
     }
     function renderDeudas(){
-      const d = ventasData.filter(v=>parseFloat(v.restante)>0);
-      let html="<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>";
-      d.forEach(v=> html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`);
-      html+="</table>"; document.getElementById('tablaDeudas').innerHTML=html;
+      const con=ventasData.filter(v=>parseFloat(v.restante)>0);
+      let html='<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>';
+      con.forEach(v=>html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`);
+      html+='</table>';
+      document.getElementById('tablaDeudas').innerHTML=html;
     }
     function renderInforme(){
-      let html="<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>";
-      ventasData.forEach(v=> html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2}</td><td>${v.monto_pago_2}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`);
-      html+="</table>"; document.getElementById('tablaVentas').innerHTML=html;
+      let html='<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
+      ventasData.forEach(v=>{
+        html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2||''}</td><td>${v.monto_pago_2||''}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;
+      });
+      html+='</table>';
+      document.getElementById('tablaVentas').innerHTML=html;
     }
 
-    window.addEventListener('DOMContentLoaded', ()=> loadData());
+    window.addEventListener('DOMContentLoaded', ()=> {
+      loadData();
+    });
   </script>
 </body>
 </html>
