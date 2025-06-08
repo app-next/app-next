@@ -11,23 +11,27 @@
     }
     * { box-sizing:border-box; margin:0; padding:0; }
     body { font-family:sans-serif; background:var(--gray-bg); display:flex; flex-direction:column; min-height:100vh; }
-    header { background:var(--black); text-align:center; padding:0.5rem; }
-    header .logo { height:40px; }
+    header { background:var(--black); text-align:center; padding:1rem; }
+    header .logo { height:50px; }
     main { flex:1; max-width:800px; margin:1rem auto; background:var(--white); padding:1rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-    .menu, .submenu { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem; width:200px; }
+    .menu, .submenu { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem; }
     .menu .btn, .submenu .subbtn {
-      padding:0.5rem; background:var(--blue); color:var(--white); border:none; border-radius:6px; cursor:pointer; text-align:center;
+      padding:0.75rem; background:var(--blue); color:var(--white); border:none; border-radius:6px;
+      font-size:1rem; cursor:pointer; text-align:center; width:100%;
     }
     .menu .btn:hover, .submenu .subbtn:hover { background:var(--yellow); color:var(--black); }
     .hidden { display:none !important; }
     form { display:flex; flex-direction:column; gap:0.5rem; max-width:500px; margin:auto; }
     label { font-weight:500; font-size:0.9rem; }
-    input, select, textarea { padding:0.5rem; font-size:1rem; border:1px solid #ccc; border-radius:6px; width:100%; }
+    input[type="text"], input[type="number"], select, textarea {
+      padding:0.5rem; font-size:1rem; border:1px solid #ccc; border-radius:6px; width:100%;
+    }
     input[readonly] { background:#eee; }
+    input[pattern] { /* for telephone */ }
     #restante.negative { color:var(--red); }
     .nota { font-size:0.9rem; color:var(--red); text-align:right; }
     .form-actions { display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem; }
-    .form-btn { padding:0.5rem 1rem; border:none; border-radius:6px; cursor:pointer; }
+    .form-btn { padding:0.5rem 1rem; border:none; border-radius:6px; font-size:1rem; cursor:pointer; }
     .submit-btn { background:var(--blue); color:var(--white); }
     .submit-btn:hover { background:var(--yellow); color:var(--black); }
     .back-btn { background:#444; color:var(--white); }
@@ -37,10 +41,12 @@
   </style>
 </head>
 <body>
-  <header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
+  <header>
+    <img src="logo.png" alt="NEXT Logo" class="logo">
+  </header>
   <main>
     <div id="mainMenu" class="menu">
-      <button class="btn" onclick="showSection('ventasMenu')">Ventas</button>
+      <button class="btn" data-section="ventasMenu">Ventas</button>
       <button class="btn">CRM</button>
       <button class="btn">Diseños</button>
       <button class="btn">Stock</button>
@@ -50,23 +56,37 @@
       <button class="btn">Agenda</button>
       <button class="btn">Reportes</button>
     </div>
+
     <div id="ventasMenu" class="submenu hidden">
-      <button class="subbtn" onclick="showSection('formVenta')">Registrar Venta</button>
-      <button class="subbtn" onclick="showSection('clientesRegistrados')">Clientes Registrados</button>
-      <button class="subbtn" onclick="showSection('clientesDeuda')">Clientes con Deudas</button>
-      <button class="subbtn" onclick="showSection('informeVentas')">Informe de Ventas</button>
-      <button class="subbtn back-btn" onclick="showSection('mainMenu')">Volver</button>
+      <button class="subbtn" data-section="formVenta">Registrar Venta</button>
+      <button class="subbtn" data-section="clientesRegistrados">Clientes Registrados</button>
+      <button class="subbtn" data-section="clientesDeuda">Clientes con Deudas</button>
+      <button class="subbtn" data-section="informeVentas">Informe de Ventas</button>
+      <button class="subbtn back-btn" data-section="mainMenu">Volver</button>
     </div>
 
     <div id="formVenta" class="hidden">
       <h2>Registrar Venta</h2>
       <form id="ventaForm" onsubmit="return enviarVenta(event)">
-        <label>Cliente</label><input list="clientes-list" id="cliente" required><datalist id="clientes-list"></datalist>
-        <label>Teléfono</label><input list="telefonos-list" id="telefono" required><datalist id="telefonos-list"></datalist>
-        <label>Producto</label><input id="producto" required>
-        <label>Cantidad</label><input type="number" id="cantidad" min="1" required>
-        <label>Precio Unitario</label><input type="number" id="precio" min="0.01" step="0.01" required>
-        <label>Total</label><input type="number" id="total" readonly>
+        <label>Cliente</label>
+        <input list="clientes-list" id="cliente" required autocomplete="off">
+        <datalist id="clientes-list"></datalist>
+
+        <label>Teléfono</label>
+        <input type="text" id="telefono" pattern="\d+" inputmode="numeric" required autocomplete="off">
+
+        <label>Producto</label>
+        <input type="text" id="producto" required>
+
+        <label>Cantidad</label>
+        <input type="number" id="cantidad" min="1" step="1" required>
+
+        <label>Precio Unitario</label>
+        <input type="number" id="precio" min="0.01" step="0.01" required>
+
+        <label>Total</label>
+        <input type="number" id="total" readonly>
+
         <label>Método de Pago 1</label>
         <select id="metodo1" required>
           <option value="Efectivo_$">Efectivo $</option>
@@ -74,7 +94,10 @@
           <option value="Zinli">Zinli</option>
           <option value="USDT">USDT</option>
         </select>
-        <label>Monto Pago 1</label><input type="number" id="monto1" min="0" step="0.01" required>
+
+        <label>Monto Pago 1</label>
+        <input type="number" id="monto1" min="0" step="0.01" required>
+
         <label>Método de Pago 2 (opcional)</label>
         <select id="metodo2">
           <option value="">Ninguno</option>
@@ -83,192 +106,189 @@
           <option value="Zinli">Zinli</option>
           <option value="USDT">USDT</option>
         </select>
-        <label>Monto Pago 2</label><input type="number" id="monto2" min="0" step="0.01">
-        <label>Tasa BCV</label><input type="number" id="tasa" min="0" step="0.01" required>
-        <label>Abono Total (USD)</label><input type="number" id="abono" readonly>
-        <label>Restante (USD)</label><input type="number" id="restante" readonly>
+
+        <label>Monto Pago 2</label>
+        <input type="number" id="monto2" min="0" step="0.01">
+
+        <label>Tasa BCV</label>
+        <input type="number" id="tasa" min="0" step="0.01">
+
+        <label>Abono Total (USD)</label>
+        <input type="number" id="abono" readonly>
+
+        <label>Restante (USD)</label>
+        <input type="number" id="restante" readonly>
+
         <div id="nota" class="nota"></div>
+
         <div class="form-actions">
-          <button type="button" class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
+          <button type="button" class="form-btn back-btn" data-section="ventasMenu">Volver</button>
           <button type="submit" class="form-btn submit-btn">Enviar</button>
         </div>
       </form>
     </div>
 
     <div id="clientesRegistrados" class="hidden">
-      <h2>Clientes Registrados</h2><div id="tablaClientes"></div>
-      <div class="form-actions"><button class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button></div>
+      <h2>Clientes Registrados</h2>
+      <div id="tablaClientes"></div>
+      <div class="form-actions">
+        <button class="form-btn back-btn" data-section="ventasMenu">Volver</button>
+      </div>
     </div>
+
     <div id="clientesDeuda" class="hidden">
-      <h2>Clientes con Deudas</h2><div id="tablaDeudas"></div>
-      <div class="form-actions"><button class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button></div>
+      <h2>Clientes con Deudas</h2>
+      <div id="tablaDeudas"></div>
+      <div class="form-actions">
+        <button class="form-btn back-btn" data-section="ventasMenu">Volver</button>
+      </div>
     </div>
+
     <div id="informeVentas" class="hidden">
-      <h2>Informe de Ventas</h2><div id="tablaVentas"></div>
-      <div class="form-actions"><button class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button></div>
+      <h2>Informe de Ventas</h2>
+      <div id="tablaVentas"></div>
+      <div class="form-actions">
+        <button class="form-btn back-btn" data-section="ventasMenu">Volver</button>
+      </div>
     </div>
   </main>
 
-  <script>
-    const endpoint = 'https://sheetdb.io/api/v1/7merahzf5ighx';
-    let ventasData = [], clientesData = [];
+<script>
+const endpoint = 'https://sheetdb.io/api/v1/7merahzf5ighx';
+let ventasData = [], clientesData = [];
 
-    function round2(x) { return Math.round(x * 100) / 100; }
+document.addEventListener('DOMContentLoaded', () => {
+  // Navigation
+  document.querySelectorAll('[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => showSection(btn.getAttribute('data-section')));
+  });
+  // Form inputs
+  ['cantidad','precio'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calculateTotal);
+  });
+  ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateAbonoRestante);
+  });
+  showSection('mainMenu');
+  loadData();
+});
 
-    async function loadData() {
-      const r = await fetch(endpoint);
-      ventasData = await r.json();
-      clientesData = ventasData.map(v => ({cliente:v.cliente, telefono:v.telefono}));
-      populateDatalists();
+async function loadData() {
+  const r = await fetch(endpoint);
+  ventasData = await r.json();
+  clientesData = ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
+  populateDatalists();
+}
+
+function populateDatalists() {
+  const cList = [...new Set(clientesData.map(c=>c.cliente))];
+  const tList = [...new Set(clientesData.map(c=>c.telefono))];
+  document.getElementById('clientes-list').innerHTML = cList.map(x=>`<option value="${x}">`).join('');
+  document.getElementById('telefonos-list').innerHTML = tList.map(x=>`<option value="${x}">`).join('');
+}
+
+function showSection(id) {
+  ['mainMenu','ventasMenu','formVenta','clientesRegistrados','clientesDeuda','informeVentas']
+    .forEach(sec => document.getElementById(sec).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  if (id !== 'mainMenu') loadData().then(() => {
+    if (id==='clientesRegistrados') renderClientes();
+    if (id==='clientesDeuda') renderDeudas();
+    if (id==='informeVentas') renderInforme();
+    if (id==='formVenta') { clearForm(); calculateTotal(); }
+  });
+}
+
+function round2(v) { return Math.round(v*100)/100; }
+
+function clearForm() {
+  document.getElementById('ventaForm').reset();
+  document.getElementById('nota').textContent='';
+  document.getElementById('restante').classList.remove('negative');
+}
+
+function calculateTotal() {
+  const c=parseFloat(document.getElementById('cantidad').value)||0;
+  const p=parseFloat(document.getElementById('precio').value)||0;
+  document.getElementById('total').value=round2(c*p);
+  updateAbonoRestante();
+}
+
+function updateAbonoRestante() {
+  const total=parseFloat(document.getElementById('total').value)||0;
+  const tasa=parseFloat(document.getElementById('tasa').value)||0;
+  let ab=0;
+  [{m:'metodo1',a:'monto1'},{m:'metodo2',a:'monto2'}].forEach(o=>{
+    let v=parseFloat(document.getElementById(o.a).value)||0;
+    if (document.getElementById(o.m).value==='BS') {
+      v = tasa>0? v/tasa : 0;
     }
+    ab += v;
+  });
+  ab = round2(ab);
+  const res = round2(total-ab);
+  document.getElementById('abono').value=ab.toFixed(2);
+  const remEl=document.getElementById('restante');
+  remEl.value=res.toFixed(2);
+  if(res<0){ remEl.classList.add('negative'); document.getElementById('nota').textContent='Saldo a favor'; }
+  else{ remEl.classList.remove('negative'); document.getElementById('nota').textContent=''; }
+}
 
-    function populateDatalists() {
-      const cList = [...new Set(clientesData.map(c=>c.cliente))];
-      const tList = [...new Set(clientesData.map(c=>c.telefono))];
-      let htmlC = '';
-      cList.forEach(x => { htmlC += '<option value="' + x + '">'; });
-      document.getElementById('clientes-list').innerHTML = htmlC;
-      let htmlT = '';
-      tList.forEach(x => { htmlT += '<option value="' + x + '">'; });
-      document.getElementById('telefonos-list').innerHTML = htmlT;
-    }
+async function enviarVenta(ev) {
+  ev.preventDefault();
+  // If BS used, require tasa
+  if ((document.getElementById('metodo1').value==='BS' || document.getElementById('metodo2').value==='BS')
+      && !document.getElementById('tasa').value) {
+    alert('Ingresa la tasa BCV para pagos en BS');
+    return false;
+  }
+  const payload={ data:{
+    fecha: new Date().toISOString().split('T')[0],
+    cliente:document.getElementById('cliente').value,
+    telefono:document.getElementById('telefono').value,
+    producto:document.getElementById('producto').value,
+    cantidad:parseFloat(document.getElementById('cantidad').value),
+    precio_unitario:parseFloat(document.getElementById('precio').value),
+    total:parseFloat(document.getElementById('total').value),
+    metodo_pago_1:document.getElementById('metodo1').value,
+    monto_pago_1:parseFloat(document.getElementById('monto1').value)||0,
+    metodo_pago_2:document.getElementById('metodo2').value||'',
+    monto_pago_2:parseFloat(document.getElementById('monto2').value)||0,
+    tasa_bcv:parseFloat(document.getElementById('tasa').value)||0,
+    equivalente_usd_bs:round2(parseFloat(document.getElementById('abono').value) - (parseFloat(document.getElementById('monto1').value)||0)),
+    abono:parseFloat(document.getElementById('abono').value),
+    restante:parseFloat(document.getElementById('restante').value),
+    asesor:document.getElementById('asesor').value,
+    comentario:document.getElementById('comentario').value
+  }};
+  const r=await fetch(endpoint, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+  if(!r.ok){ alert('Error al registrar la venta'); return false; }
+  alert('Venta registrada con éxito');
+  showSection('clientesRegistrados');
+  return false;
+}
 
-    function clearForm() {
-      document.getElementById('ventaForm').reset();
-      document.getElementById('nota').textContent = '';
-      document.getElementById('restante').classList.remove('negative');
-    }
+function renderClientes(){
+  const seen=new Set();
+  let html='<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
+  ventasData.forEach(v=>{ if(!seen.has(v.cliente)){ seen.add(v.cliente); html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td></tr>`; }});
+  html+='</table>'; document.getElementById('tablaClientes').innerHTML=html;
+}
 
-    async function showSection(id) {
-      document.querySelectorAll('main > div').forEach(el=>el.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-      if (id === 'formVenta') {
-        clearForm();
-        await loadData();
-        calculateTotal();
-      } else if (id === 'clientesRegistrados') {
-        await loadData();
-        renderClientes();
-      } else if (id === 'clientesDeuda') {
-        await loadData();
-        renderDeudas();
-      } else if (id === 'informeVentas') {
-        await loadData();
-        renderInforme();
-      }
-    }
+function renderDeudas(){
+  let html='<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>';
+  ventasData.forEach(v=>{ if(parseFloat(v.restante)>0) html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`; });
+  html+='</table>'; document.getElementById('tablaDeudas').innerHTML=html;
+}
 
-    document.getElementById('cliente').addEventListener('change', () => {
-      const sel = clientesData.find(c=>c.cliente === document.getElementById('cliente').value);
-      if (sel) document.getElementById('telefono').value = sel.telefono;
-    });
-
-    ['cantidad','precio'].forEach(id => document.getElementById(id).addEventListener('input', calculateTotal));
-    ['metodo1','metodo2','monto1','monto2','tasa']
-      .forEach(id => document.getElementById(id).addEventListener('input', updateAbonoRestante));
-
-    function calculateTotal() {
-      const c = parseFloat(document.getElementById('cantidad').value)||0;
-      const p = parseFloat(document.getElementById('precio').value)||0;
-      document.getElementById('total').value = round2(c * p);
-      updateAbonoRestante();
-    }
-
-    function updateAbonoRestante() {
-      const total = parseFloat(document.getElementById('total').value)||0;
-      const tasa = parseFloat(document.getElementById('tasa').value)||0;
-      let abono = 0;
-      [{met:'metodo1',amt:'monto1'},{met:'metodo2',amt:'monto2'}].forEach(o => {
-        let val = parseFloat(document.getElementById(o.amt).value)||0;
-        if (document.getElementById(o.met).value === 'BS') {
-          val = tasa > 0 ? val / tasa : 0;
-        }
-        abono += val;
-      });
-      const ab = round2(abono);
-      const res = round2(parseFloat(document.getElementById('total').value||0) - ab);
-      document.getElementById('abono').value = ab;
-      const restanteEl = document.getElementById('restante');
-      restanteEl.value = res;
-      if (res < 0) {
-        restanteEl.classList.add('negative');
-        document.getElementById('nota').textContent = 'Saldo a favor';
-      } else {
-        restanteEl.classList.remove('negative');
-        document.getElementById('nota').textContent = '';
-      }
-    }
-
-    async function enviarVenta(ev) {
-      ev.preventDefault();
-      const payload = { data: {
-        fecha: new Date().toISOString().split('T')[0],
-        cliente: document.getElementById('cliente').value,
-        telefono: document.getElementById('telefono').value,
-        producto: document.getElementById('producto').value,
-        cantidad: parseFloat(document.getElementById('cantidad').value),
-        precio_unitario: parseFloat(document.getElementById('precio').value),
-        total: parseFloat(document.getElementById('total').value),
-        metodo_pago_1: document.getElementById('metodo1').value,
-        monto_pago_1: parseFloat(document.getElementById('monto1').value)||0,
-        metodo_pago_2: document.getElementById('metodo2').value||'',
-        monto_pago_2: parseFloat(document.getElementById('monto2').value)||0,
-        tasa_bcv: parseFloat(document.getElementById('tasa').value)||0,
-        equivalente_usd_bs: round2(parseFloat(document.getElementById('abono').value) - (parseFloat(document.getElementById('monto1').value)||0)),
-        abono: parseFloat(document.getElementById('abono').value),
-        restante: parseFloat(document.getElementById('restante').value),
-        asesor: document.getElementById('asesor').value,
-        comentario: document.getElementById('comentario').value
-      }};
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) {
-        alert('Error al registrar la venta');
-        return false;
-      }
-      alert('Venta registrada con éxito');
-      await loadData();
-      showSection('clientesRegistrados');
-      return false;
-    }
-
-    function renderClientes() {
-      let html = '<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
-      const seen = new Set();
-      ventasData.forEach(v => {
-        if (!seen.has(v.cliente)) {
-          seen.add(v.cliente);
-          html += `<tr><td>${v.cliente}</td><td>${v.telefono}</td></tr>`;
-        }
-      });
-      html += '</table>';
-      document.getElementById('tablaClientes').innerHTML = html;
-    }
-
-    function renderDeudas() {
-      let html = '<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>';
-      ventasData.forEach(v => {
-        if (parseFloat(v.restante) > 0) {
-          html += `<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`;
-        }
-      });
-      html += '</table>';
-      document.getElementById('tablaDeudas').innerHTML = html;
-    }
-
-    function renderInforme() {
-      let html = '<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
-      ventasData.forEach(v => {
-        html += `<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2}</td><td>${v.monto_pago_2}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;
-      });
-      html += '</table>';
-      document.getElementById('tablaVentas').innerHTML = html;
-    }
-
-    window.addEventListener('DOMContentLoaded', () => loadData());
-  </script>
+function renderInforme(){
+  let html='<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
+  ventasData.forEach(v=>{ html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2}</td><td>${v.monto_pago_2}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;});
+  html+='</table>'; document.getElementById('tablaVentas').innerHTML=html;
+}
+</script>
 </body>
 </html>
