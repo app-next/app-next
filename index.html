@@ -40,7 +40,9 @@
   </style>
 </head>
 <body>
-  <header><img src="logo.png" alt="NEXT Logo" class="logo"></header>
+  <header>
+    <img src="logo.png" alt="NEXT Logo" class="logo">
+  </header>
   <main>
     <!-- Main Menu -->
     <div id="mainMenu" class="menu">
@@ -71,7 +73,8 @@
         <datalist id="clientes-list"></datalist>
 
         <label for="telefono">Teléfono</label>
-        <input type="tel" id="telefono" pattern="\d+" inputmode="numeric" required>
+        <input list="telefonos-list" type="tel" id="telefono" pattern="\d+" inputmode="numeric" required autocomplete="off">
+        <datalist id="telefonos-list"></datalist>
 
         <label for="producto">Producto</label>
         <input type="text" id="producto" required>
@@ -164,15 +167,16 @@
 const api = 'https://sheetdb.io/api/v1/7merahzf5ighx';
 let ventasData = [], clientesData = [];
 
-// Initialize
+// Inicializar evento y datos
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-section]').forEach(btn => {
     btn.addEventListener('click', () => showSection(btn.dataset.section));
   });
   ['cantidad','precio'].forEach(id => document.getElementById(id).addEventListener('input', calculateTotal));
-  ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id => 
+  ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id =>
     document.getElementById(id).addEventListener('input', updateAbonoRestante)
   );
+  document.getElementById('cliente').addEventListener('input', fillTelefono);
   showSection('mainMenu');
   loadData();
 });
@@ -183,29 +187,38 @@ async function loadData(){
   clientesData = ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
 }
 
-function populateDatalists(){
-  document.getElementById('clientes-list').innerHTML = [...new Set(clientesData.map(c=>c.cliente))]
-    .map(x=>`<option value="${x}">`).join('');
-}
-
-async function showSection(section){
+function showSection(section){
   ['mainMenu','ventasMenu','formVenta','clientesRegistrados','clientesDeuda','informeVentas']
     .forEach(id=> document.getElementById(id).classList.add('hidden'));
   document.getElementById(section).classList.remove('hidden');
-  if(section !== 'mainMenu'){
-    await loadData();
-    populateDatalists();
-    if(section === 'formVenta'){
-      clearForm();
-      calculateTotal();
-    } else if(section === 'clientesRegistrados'){
-      renderClientes();
-    } else if(section === 'clientesDeuda'){
-      renderDeudas();
-    } else if(section === 'informeVentas'){
-      renderInforme();
-    }
+  if(section!=='mainMenu'){
+    loadData().then(() => {
+      populateDatalists();
+      if(section === 'formVenta'){
+        clearForm();
+        calculateTotal();
+      } else if(section === 'clientesRegistrados'){
+        renderClientes();
+      } else if(section === 'clientesDeuda'){
+        renderDeudas();
+      } else if(section === 'informeVentas'){
+        renderInforme();
+      }
+    });
   }
+}
+
+function populateDatalists(){
+  document.getElementById('clientes-list').innerHTML = [...new Set(clientesData.map(c=>c.cliente))]
+    .map(x=>`<option value="${x}">`).join('');
+  document.getElementById('telefonos-list').innerHTML = [...new Set(clientesData.map(c=>c.telefono))]
+    .map(x=>`<option value="${x}">`).join('');
+}
+
+function fillTelefono(){
+  const val = document.getElementById('cliente').value;
+  const sel = clientesData.find(c=>c.cliente===val);
+  if(sel) document.getElementById('telefono').value = sel.telefono;
 }
 
 function round2(n){ return Math.round(n*100)/100; }
@@ -217,34 +230,43 @@ function clearForm(){
 }
 
 function calculateTotal(){
-  const c = parseFloat(document.getElementById('cantidad').value) || 0;
-  const p = parseFloat(document.getElementById('precio').value) || 0;
-  document.getElementById('total').value = round2(c * p).toFixed(2);
+  const c = parseFloat(document.getElementById('cantidad').value)||0;
+  const p = parseFloat(document.getElementById('precio').value)||0;
+  document.getElementById('total').value = round2(c*p).toFixed(2);
   updateAbonoRestante();
 }
 
 function updateAbonoRestante(){
-  const total = parseFloat(document.getElementById('total').value) || 0;
-  const tasa = parseFloat(document.getElementById('tasa').value) || 0;
-  let ab = 0;
-  [{m:'metodo1',a:'monto1'},{m:'metodo2',a:'monto2'}].forEach(o => {
-    let v = parseFloat(document.getElementById(o.a).value) || 0;
-    if(document.getElementById(o.m).value === 'BS'){
-      v = tasa>0 ? v / tasa : 0;
-    }
-    ab += v;
-  });
+  const total = parseFloat(document.getElementById('total').value)||0;
+  const tasa = parseFloat(document.getElementById('tasa').value)||0;
+  let ab=0;
+
+  // pago1
+  let v1 = parseFloat(document.getElementById('monto1').value)||0;
+  if(document.getElementById('metodo1').value==='BS'){
+    v1 = tasa>0 ? v1/tasa : 0;
+  }
+  ab += v1;
+
+  // pago2
+  let v2 = parseFloat(document.getElementById('monto2').value)||0;
+  if(document.getElementById('metodo2').value==='BS'){
+    v2 = tasa>0 ? v2/tasa : 0;
+  }
+  ab += v2;
+
   ab = round2(ab);
-  const rem = round2(total - ab);
+  const rem = round2(total-ab);
   document.getElementById('abono').value = ab.toFixed(2);
   const remEl = document.getElementById('restante');
   remEl.value = rem.toFixed(2);
-  if(rem < 0){
+
+  if(rem<0){
     remEl.classList.add('negative');
-    document.getElementById('nota').textContent = 'Saldo a favor';
+    document.getElementById('nota').textContent='Saldo a favor';
   } else {
     remEl.classList.remove('negative');
-    document.getElementById('nota').textContent = '';
+    document.getElementById('nota').textContent='';
   }
 }
 
@@ -256,32 +278,34 @@ async function enviarVenta(ev){
     alert('Ingresa la tasa BCV para pagos en BS');
     return false;
   }
-  const data = { data: {
+  const payload = { data:{
     fecha: new Date().toISOString().split('T')[0],
     cliente: document.getElementById('cliente').value,
     telefono: document.getElementById('telefono').value,
     producto: document.getElementById('producto').value,
-    cantidad: parseFloat(document.getElementById('cantidad').value) || 0,
-    precio_unitario: parseFloat(document.getElementById('precio').value) || 0,
-    total: parseFloat(document.getElementById('total').value) || 0,
+    cantidad: parseFloat(document.getElementById('cantidad').value)||0,
+    precio_unitario: parseFloat(document.getElementById('precio').value)||0,
+    total: parseFloat(document.getElementById('total').value)||0,
     metodo_pago_1: m1,
-    monto_pago_1: parseFloat(document.getElementById('monto1').value) || 0,
+    monto_pago_1: parseFloat(document.getElementById('monto1').value)||0,
     metodo_pago_2: m2,
-    monto_pago_2: parseFloat(document.getElementById('monto2').value) || 0,
-    tasa_bcv: parseFloat(document.getElementById('tasa').value) || 0,
-    equivalente_usd_bs: round2(parseFloat(document.getElementById('abono').value)
-      - (parseFloat(document.getElementById('monto1').value)||0)),
+    monto_pago_2: parseFloat(document.getElementById('monto2').value)||0,
+    tasa_bcv: parseFloat(document.getElementById('tasa').value)||0,
+    equivalente_usd_bs: round2((parseFloat(document.getElementById('abono').value)||0) - (parseFloat(document.getElementById('monto1').value)||0)),
     abono: parseFloat(document.getElementById('abono').value)||0,
     restante: parseFloat(document.getElementById('restante').value)||0,
     asesor: document.getElementById('asesor').value,
     comentario: document.getElementById('comentario').value
   }};
   const res = await fetch(api, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(data)
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
   });
-  if(!res.ok){ alert('Error al registrar venta'); return false; }
+  if(!res.ok){
+    alert('Error al registrar venta');
+    return false;
+  }
   alert('Venta registrada con éxito');
   showSection('ventasMenu');
   return false;
