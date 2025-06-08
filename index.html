@@ -1,1 +1,113 @@
-/mnt/data/NEXT_APP_FIREBASE_INDEX.html
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>App de Ventas NEXT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+    header { background: black; color: white; padding: 10px; text-align: center; }
+    main { padding: 20px; max-width: 600px; margin: auto; background: white; border-radius: 10px; }
+    input, select, button { display: block; width: 100%; margin: 10px 0; padding: 8px; }
+    .section-box { margin-top: 30px; background: #f0f0f0; padding: 15px; border-radius: 8px; }
+    .volver-btn { margin-top: 15px; background: black; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo NEXT" height="50">
+  </header>
+
+  <main>
+    <h2>Registrar Venta</h2>
+    <input type="text" id="cliente" placeholder="Nombre del cliente">
+    <input type="text" id="telefono" placeholder="Teléfono">
+    <input type="number" id="abono" placeholder="Abono">
+    <input type="number" id="restante" placeholder="Restante">
+    <input type="number" id="total" placeholder="Total">
+    <button onclick="registrarVenta()">Registrar</button>
+
+    <div class="section-box">
+      <button onclick="mostrarClientes()">Clientes Registrados</button>
+      <button onclick="mostrarDeudas()">Clientes con Deuda</button>
+      <button onclick="mostrarInforme()">Informe de Ventas</button>
+    </div>
+
+    <div id="resultado" class="section-box"></div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-Ls632iFhncM7iqfOvJisRKL2xb_xyQo",
+      authDomain: "next-app05.firebaseapp.com",
+      projectId: "next-app05",
+      storageBucket: "next-app05.firebasestorage.app",
+      messagingSenderId: "138210783252",
+      appId: "1:138210783252:web:7792989863844d40507701",
+      measurementId: "G-X9Q7QRZSFN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function registrarVenta() {
+      const cliente = document.getElementById("cliente").value;
+      const telefono = document.getElementById("telefono").value;
+      const abono = parseFloat(document.getElementById("abono").value);
+      const restante = parseFloat(document.getElementById("restante").value);
+      const total = parseFloat(document.getElementById("total").value);
+
+      if (!cliente || isNaN(abono) || isNaN(restante) || isNaN(total)) {
+        alert("Por favor completa todos los campos correctamente.");
+        return;
+      }
+
+      await addDoc(collection(db, "ventas"), {
+        cliente, telefono, abono, restante, total
+      });
+
+      alert("Venta registrada con éxito.");
+      document.querySelector("main").reset?.();
+    }
+
+    async function mostrarClientes() {
+      const querySnapshot = await getDocs(collection(db, "ventas"));
+      let html = "<h3>Clientes Registrados</h3>";
+      querySnapshot.forEach(doc => {
+        const d = doc.data();
+        html += `<p><strong>${d.cliente}</strong> - ${d.telefono}</p>`;
+      });
+      document.getElementById("resultado").innerHTML = html + volverBtn();
+    }
+
+    async function mostrarDeudas() {
+      const querySnapshot = await getDocs(collection(db, "ventas"));
+      let html = "<h3>Clientes con Deuda</h3>";
+      querySnapshot.forEach(doc => {
+        const d = doc.data();
+        if (parseFloat(d.restante) > 0) {
+          html += `<p><strong>${d.cliente}</strong> - Deuda: $${d.restante}</p>`;
+        }
+      });
+      document.getElementById("resultado").innerHTML = html + volverBtn();
+    }
+
+    async function mostrarInforme() {
+      const querySnapshot = await getDocs(collection(db, "ventas"));
+      let total = 0;
+      querySnapshot.forEach(doc => {
+        total += parseFloat(doc.data().total);
+      });
+      document.getElementById("resultado").innerHTML = `<h3>Informe de Ventas</h3><p>Total vendido: $${total.toFixed(2)}</p>` + volverBtn();
+    }
+
+    function volverBtn() {
+      return `<button class="volver-btn" onclick="document.getElementById('resultado').innerHTML = ''">Volver</button>`;
+    }
+  </script>
+</body>
+</html>
