@@ -162,7 +162,39 @@
       // Aquí se puede conectar con registros previos si se desea
     }
     function enviarFormulario() {
-      alert("Aquí se enviará el formulario a SheetDB");
+      const datos = {
+        fecha: new Date().toLocaleDateString("es-VE"),
+        cliente: document.getElementById("cliente").value,
+        telefono: document.getElementById("telefono").value,
+        producto: document.getElementById("producto").value,
+        cantidad: document.getElementById("cantidad").value,
+        precio_unitario: document.getElementById("precio").value,
+        total: document.getElementById("total").textContent,
+        abono: document.getElementById("abono").value,
+        restante: document.getElementById("restante").textContent,
+        forma_pago: document.getElementById("forma_pago").value,
+        divisa: document.getElementById("divisa").value,
+        asesor: document.getElementById("asesor").value,
+        comentario: document.getElementById("comentario").value
+    };
+    fetch("https://sheetdb.io/api/v1/7merahzf5ighx", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ data: datos })
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("✅ Venta registrada correctamente");
+            volverSubmenu();
+        } else {
+            alert("❌ Error al registrar la venta");
+        }
+    })
+    .catch(error => {
+        alert("❌ Error de conexión con SheetDB");
+    });
     }
   </script>
 </body>
