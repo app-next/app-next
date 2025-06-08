@@ -52,7 +52,6 @@
       <button class="btn">Finanzas</button>
       <button class="btn">Marketing</button>
       <button class="btn">Agenda</button>
-      <button class="btn back-btn" data-section="mainMenu">Salir</button>
     </div>
     <!-- Submenu Ventas -->
     <div id="ventasMenu" class="submenu hidden">
@@ -163,128 +162,159 @@
 
 <script>
 const api = 'https://sheetdb.io/api/v1/7merahzf5ighx';
-let ventasData=[],clientesData=[];
+let ventasData = [], clientesData = [];
 
-document.addEventListener('DOMContentLoaded',()=>{
-  document.querySelectorAll('[data-section]').forEach(btn=>btn.onclick=()=>showSection(btn.dataset.section));
-  ['cantidad','precio'].forEach(id=>document.getElementById(id).oninput=calculateTotal);
-  ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id=>document.getElementById(id).oninput=updateAbonoRestante);
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => showSection(btn.dataset.section));
+  });
+  ['cantidad','precio'].forEach(id => document.getElementById(id).addEventListener('input', calculateTotal));
+  ['metodo1','metodo2','monto1','monto2','tasa'].forEach(id => 
+    document.getElementById(id).addEventListener('input', updateAbonoRestante)
+  );
   showSection('mainMenu');
   loadData();
 });
 
 async function loadData(){
-  const r=await fetch(api);
-  ventasData=await r.json();
-  clientesData=ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
-  populateDatalists();
+  const res = await fetch(api);
+  ventasData = await res.json();
+  clientesData = ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
 }
 
 function populateDatalists(){
-  document.getElementById('clientes-list').innerHTML=[...new Set(clientesData.map(c=>c.cliente))]
-    .map(x=>`<option value="${x}">`).join('');
-  document.getElementById('telefonos-list').innerHTML=[...new Set(clientesData.map(c=>c.telefono))]
+  document.getElementById('clientes-list').innerHTML = [...new Set(clientesData.map(c=>c.cliente))]
     .map(x=>`<option value="${x}">`).join('');
 }
 
-function showSection(sec){
+async function showSection(section){
   ['mainMenu','ventasMenu','formVenta','clientesRegistrados','clientesDeuda','informeVentas']
-    .forEach(s=>document.getElementById(s).classList.add('hidden'));
-  document.getElementById(sec).classList.remove('hidden');
-  if(sec!=='mainMenu'){ awaitLoadRender(sec); }
+    .forEach(id=> document.getElementById(id).classList.add('hidden'));
+  document.getElementById(section).classList.remove('hidden');
+  if(section !== 'mainMenu'){
+    await loadData();
+    populateDatalists();
+    if(section === 'formVenta'){
+      clearForm();
+      calculateTotal();
+    } else if(section === 'clientesRegistrados'){
+      renderClientes();
+    } else if(section === 'clientesDeuda'){
+      renderDeudas();
+    } else if(section === 'informeVentas'){
+      renderInforme();
+    }
+  }
 }
 
-async function awaitLoadRender(sec){
-  await loadData();
-  if(sec==='formVenta'){ clearForm(); calculateTotal(); }
-  if(sec==='clientesRegistrados') renderClientes();
-  if(sec==='clientesDeuda') renderDeudas();
-  if(sec==='informeVentas') renderInforme();
-}
-
-function round2(n){return Math.round(n*100)/100;}
+function round2(n){ return Math.round(n*100)/100; }
 
 function clearForm(){
   document.getElementById('ventaForm').reset();
-  document.getElementById('nota').textContent='';
+  document.getElementById('nota').textContent = '';
   document.getElementById('restante').classList.remove('negative');
 }
 
 function calculateTotal(){
-  const c=parseFloat(document.getElementById('cantidad').value)||0;
-  const p=parseFloat(document.getElementById('precio').value)||0;
-  document.getElementById('total').value=round2(c*p).toFixed(2);
+  const c = parseFloat(document.getElementById('cantidad').value) || 0;
+  const p = parseFloat(document.getElementById('precio').value) || 0;
+  document.getElementById('total').value = round2(c * p).toFixed(2);
   updateAbonoRestante();
 }
 
 function updateAbonoRestante(){
-  const total=parseFloat(document.getElementById('total').value)||0;
-  const tasa=parseFloat(document.getElementById('tasa').value)||0;
-  let ab=0;
-  [{m:'metodo1',a:'monto1'},{m:'metodo2',a:'monto2'}].forEach(o=>{
-    let v=parseFloat(document.getElementById(o.a).value)||0;
-    if(document.getElementById(o.m).value==='BS')v=tasa>0?v/tasa:0;
-    ab+=v;
+  const total = parseFloat(document.getElementById('total').value) || 0;
+  const tasa = parseFloat(document.getElementById('tasa').value) || 0;
+  let ab = 0;
+  [{m:'metodo1',a:'monto1'},{m:'metodo2',a:'monto2'}].forEach(o => {
+    let v = parseFloat(document.getElementById(o.a).value) || 0;
+    if(document.getElementById(o.m).value === 'BS'){
+      v = tasa>0 ? v / tasa : 0;
+    }
+    ab += v;
   });
-  ab=round2(ab);
-  const rem=round2(total-ab);
-  document.getElementById('abono').value=ab.toFixed(2);
-  const rEl=document.getElementById('restante');
-  rEl.value=rem.toFixed(2);
-  if(rem<0){rEl.classList.add('negative');document.getElementById('nota').textContent='Saldo a favor';}
-  else{rEl.classList.remove('negative');document.getElementById('nota').textContent='';}
+  ab = round2(ab);
+  const rem = round2(total - ab);
+  document.getElementById('abono').value = ab.toFixed(2);
+  const remEl = document.getElementById('restante');
+  remEl.value = rem.toFixed(2);
+  if(rem < 0){
+    remEl.classList.add('negative');
+    document.getElementById('nota').textContent = 'Saldo a favor';
+  } else {
+    remEl.classList.remove('negative');
+    document.getElementById('nota').textContent = '';
+  }
 }
 
 async function enviarVenta(ev){
   ev.preventDefault();
-  const pay1=document.getElementById('metodo1').value, pay2=document.getElementById('metodo2').value;
-  if((pay1==='BS'||pay2==='BS')&&!document.getElementById('tasa').value){
-    alert('Ingresa la tasa BCV'); return false;
+  const m1 = document.getElementById('metodo1').value;
+  const m2 = document.getElementById('metodo2').value;
+  if((m1==='BS'||m2==='BS') && !document.getElementById('tasa').value){
+    alert('Ingresa la tasa BCV para pagos en BS');
+    return false;
   }
-  const data={data:{
-    fecha:new Date().toISOString().split('T')[0],
-    cliente:document.getElementById('cliente').value,
-    telefono:document.getElementById('telefono').value,
-    producto:document.getElementById('producto').value,
-    cantidad:parseFloat(document.getElementById('cantidad').value)||0,
-    precio_unitario:parseFloat(document.getElementById('precio').value)||0,
-    total:parseFloat(document.getElementById('total').value)||0,
-    metodo_pago_1:pay1, monto_pago_1:parseFloat(document.getElementById('monto1').value)||0,
-    metodo_pago_2:pay2, monto_pago_2:parseFloat(document.getElementById('monto2').value)||0,
-    tasa_bcv:parseFloat(document.getElementById('tasa').value)||0,
-    equivalente_usd_bs:round2(parseFloat(document.getElementById('abono').value)
+  const data = { data: {
+    fecha: new Date().toISOString().split('T')[0],
+    cliente: document.getElementById('cliente').value,
+    telefono: document.getElementById('telefono').value,
+    producto: document.getElementById('producto').value,
+    cantidad: parseFloat(document.getElementById('cantidad').value) || 0,
+    precio_unitario: parseFloat(document.getElementById('precio').value) || 0,
+    total: parseFloat(document.getElementById('total').value) || 0,
+    metodo_pago_1: m1,
+    monto_pago_1: parseFloat(document.getElementById('monto1').value) || 0,
+    metodo_pago_2: m2,
+    monto_pago_2: parseFloat(document.getElementById('monto2').value) || 0,
+    tasa_bcv: parseFloat(document.getElementById('tasa').value) || 0,
+    equivalente_usd_bs: round2(parseFloat(document.getElementById('abono').value)
       - (parseFloat(document.getElementById('monto1').value)||0)),
-    abono:parseFloat(document.getElementById('abono').value)||0,
-    restante:parseFloat(document.getElementById('restante').value)||0,
-    asesor:document.getElementById('asesor').value,
-    comentario:document.getElementById('comentario').value
+    abono: parseFloat(document.getElementById('abono').value)||0,
+    restante: parseFloat(document.getElementById('restante').value)||0,
+    asesor: document.getElementById('asesor').value,
+    comentario: document.getElementById('comentario').value
   }};
-  const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!r.ok){alert('Error al registrar');return false;}
+  const res = await fetch(api, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  if(!res.ok){ alert('Error al registrar venta'); return false; }
   alert('Venta registrada con éxito');
   showSection('ventasMenu');
   return false;
 }
 
 function renderClientes(){
-  let html='<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
+  let html = '<table><tr><th>Cliente</th><th>Teléfono</th></tr>';
   new Set(ventasData.map(v=>v.cliente)).forEach(name=>{
-    const tel=ventasData.find(v=>v.cliente===name).telefono;
-    html+=`<tr><td>${name}</td><td>${tel}</td></tr>`;
+    const tel = ventasData.find(v=>v.cliente===name).telefono;
+    html += `<tr><td>${name}</td><td>${tel}</td></tr>`;
   });
-  html+='</table>';document.getElementById('tablaClientes').innerHTML=html;
+  html += '</table>';
+  document.getElementById('tablaClientes').innerHTML = html;
 }
 
 function renderDeudas(){
-  let html='<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>';
-  ventasData.forEach(v=>{if(parseFloat(v.restante)>0)html+=`<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`;});
-  html+='</table>';document.getElementById('tablaDeudas').innerHTML=html;
+  let html = '<table><tr><th>Cliente</th><th>Teléfono</th><th>Restante</th></tr>';
+  ventasData.forEach(v=>{
+    if(parseFloat(v.restante)>0){
+      html += `<tr><td>${v.cliente}</td><td>${v.telefono}</td><td>${v.restante}</td></tr>`;
+    }
+  });
+  html += '</table>';
+  document.getElementById('tablaDeudas').innerHTML = html;
 }
 
 function renderInforme(){
-  let html='<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
-  ventasData.forEach(v=>{html+=`<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2}</td><td>${v.monto_pago_2}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;});
-  html+='</table>';document.getElementById('tablaVentas').innerHTML=html;
+  let html = '<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>P1</th><th>M1</th><th>P2</th><th>M2</th><th>Tasa</th><th>EqUSD</th><th>Abono</th><th>Restante</th></tr>';
+  ventasData.forEach(v=>{
+    html += `<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.cantidad}</td><td>${v.precio_unitario}</td><td>${v.total}</td><td>${v.metodo_pago_1}</td><td>${v.monto_pago_1}</td><td>${v.metodo_pago_2}</td><td>${v.monto_pago_2}</td><td>${v.tasa_bcv}</td><td>${v.equivalente_usd_bs}</td><td>${v.abono}</td><td>${v.restante}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('tablaVentas').innerHTML = html;
 }
 </script>
 </body>
