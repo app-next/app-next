@@ -11,6 +11,7 @@
       --blue: #0033A0;
       --yellow: #FFD700;
       --gray-bg: #f5f5f5;
+      --red: #E63946;
     }
     * { box-sizing: border-box; margin:0; padding:0; }
     body { font-family:sans-serif; background:var(--gray-bg); color:var(--black); display:flex; flex-direction:column; min-height:100vh; }
@@ -28,6 +29,7 @@
     label { font-weight:500; }
     input, select, textarea { padding:0.5rem; border:1px solid #ccc; border-radius:6px; width:100%; }
     input[readonly] { background:#eee; }
+    .nota { font-size:0.9rem; color:var(--red); }
     .form-actions { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1rem; }
     .form-btn { width:120px; height:40px; border:none; border-radius:6px; cursor:pointer; }
     .submit-btn { background:var(--blue); color:var(--white); }
@@ -65,7 +67,6 @@
     <div id="formVenta" class="hidden">
       <h2>Registrar Venta</h2>
       <form onsubmit="return enviarVenta(event)">
-        <!-- form fields as previous version -->
         <label>Cliente</label><input list="clientes-list" id="cliente" required /><datalist id="clientes-list"></datalist>
         <label>Teléfono</label><input list="telefonos-list" id="telefono" required /><datalist id="telefonos-list"></datalist>
         <label>Producto</label><input id="producto" required />
@@ -83,6 +84,7 @@
         <label>Tasa BCV (ingresar manualmente)</label><input type="number" id="tasa" min="0" step="0.01" />
         <label>Abono Total (USD)</label><input type="number" id="abono" readonly />
         <label>Restante (USD)</label><input type="number" id="restante" readonly />
+        <div id="nota" class="nota"></div>
         <div class="form-actions">
           <button type="button" class="form-btn back-btn" onclick="showSection('ventasMenu')">Volver</button>
           <button type="submit" class="form-btn submit-btn">Enviar</button>
@@ -110,34 +112,31 @@
 const endpoint='https://sheetdb.io/api/v1/7merahzf5ighx';
 let ventasData=[], clientesData=[];
 
-function round2(n){return Math.round(n*100)/100;}
-
-async function showSection(id){
+function showSection(id) {
   document.querySelectorAll('main > div').forEach(el=>el.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-  if(['clientesRegistrados','clientesDeuda','informeVentas'].includes(id)){
-    await loadData();
+  if (['clientesRegistrados','clientesDeuda','informeVentas'].includes(id)) {
+    loadData().then(()=>{
+      if (id==='clientesRegistrados') renderClientes();
+      if (id==='clientesDeuda') renderDeudas();
+      if (id==='informeVentas') renderInforme();
+    });
   }
-  if(id==='formVenta'){calculateTotal();}
-  if(id==='clientesRegistrados'){renderClientes();}
-  if(id==='clientesDeuda'){renderDeudas();}
-  if(id==='informeVentas'){renderInforme();}
+  if (id==='formVenta') calculateTotal();
 }
 
 async function loadData(){
-  try{
-    const r=await fetch(endpoint);
-    ventasData=await r.json();
-    clientesData=ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
-    populateDatalists();
-  }catch(e){console.error(e);}
+  const r=await fetch(endpoint);
+  ventasData=await r.json();
+  clientesData=ventasData.map(v=>({cliente:v.cliente,telefono:v.telefono}));
+  populateDatalists();
 }
 
 function populateDatalists(){
   const c=[...new Set(clientesData.map(c=>c.cliente))];
   const t=[...new Set(clientesData.map(c=>c.telefono))];
-  document.getElementById('clientes-list').innerHTML=c.map(x=>`<option value="${x}">`).join('');
-  document.getElementById('telefonos-list').innerHTML=t.map(x=>`<option value="${x}">`).join('');
+  document.getElementById('clientes-list').innerHTML=c.map(x=>`<option value="\${x}">`).join('');
+  document.getElementById('telefonos-list').innerHTML=t.map(x=>`<option value="\${x}">`).join('');
 }
 
 document.getElementById('cliente').addEventListener('change',()=>{
@@ -145,15 +144,15 @@ document.getElementById('cliente').addEventListener('change',()=>{
   if(sel)document.getElementById('telefono').value=sel.telefono;
 });
 
+['cantidad','precio'].forEach(id=>document.getElementById(id).addEventListener('input', calculateTotal));
+['metodo1','metodo2','monto1','monto2','tasa'].forEach(id=>document.getElementById(id).addEventListener('input', updateAbonoRestante));
+
 function calculateTotal(){
   const c=parseFloat(document.getElementById('cantidad').value)||0;
   const p=parseFloat(document.getElementById('precio').value)||0;
-  document.getElementById('total').value=round2(c*p);
+  document.getElementById('total').value = (c*p).toFixed(2);
   updateAbonoRestante();
 }
-
-['cantidad','precio'].forEach(id=>document.getElementById(id).addEventListener('input',calculateTotal));
-['metodo1','metodo2','monto1','monto2','tasa'].forEach(id=>document.getElementById(id).addEventListener('input',updateAbonoRestante));
 
 function updateAbonoRestante(){
   const total=parseFloat(document.getElementById('total').value)||0;
@@ -162,21 +161,27 @@ function updateAbonoRestante(){
   [{met:'metodo1',amt:'monto1'},{met:'metodo2',amt:'monto2'}].forEach(o=>{
     const method=document.getElementById(o.met).value;
     let val=parseFloat(document.getElementById(o.amt).value)||0;
-    if(method==='BS'){ if(tasa>0) val=val/tasa; else val=0; }
-    abono+=val;
+    if(method==='BS'){
+      val = tasa>0 ? val/tasa : 0;
+    }
+    abono += val;
   });
-  abono=round2(abono);
-  let restante=round2((parseFloat(document.getElementById('total').value)||0)-abono);
-  if(abono<0) abono=0;
-  if(restante<0) restante=0;
-  document.getElementById('abono').value=abono;
-  document.getElementById('restante').value=restante;
+  const abonoStr = abono.toFixed(2);
+  const restante = (total - abono).toFixed(2);
+  document.getElementById('abono').value = abonoStr;
+  document.getElementById('restante').value = restante;
+  const notaEl = document.getElementById('nota');
+  if (parseFloat(restante) < 0) {
+    notaEl.textContent = 'Saldo a favor';
+  } else {
+    notaEl.textContent = '';
+  }
 }
 
 async function enviarVenta(ev){
   ev.preventDefault();
-  const resta=parseFloat(document.getElementById('restante').value);
-  if(resta<0){ alert('Revisa montos, hay negativos.'); return false;}
+  const restante = parseFloat(document.getElementById('restante').value);
+  // allow negative restante
   const payload={data:{
     fecha:new Date().toISOString().split('T')[0],
     cliente:document.getElementById('cliente').value,
@@ -190,23 +195,22 @@ async function enviarVenta(ev){
     metodo_pago_2:document.getElementById('metodo2').value||'',
     monto_pago_2:parseFloat(document.getElementById('monto2').value)||0,
     tasa_bcv:parseFloat(document.getElementById('tasa').value)||0,
-    equivalente_usd_bs:round2((parseFloat(document.getElementById('monto2').value)||0)*(document.getElementById('metodo2').value==='BS'?1/parseFloat(document.getElementById('tasa').value):0)),
+    equivalente_usd_bs: parseFloat((document.getElementById('abono').value) - (parseFloat(document.getElementById('monto1').value)||0)).toFixed(2),
     abono:parseFloat(document.getElementById('abono').value),
-    restante:parseFloat(document.getElementById('restante').value),
+    restante:restante,
     asesor:document.getElementById('asesor').value,
     comentario:document.getElementById('comentario').value
   }};
-  try{
-    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    alert('Venta registrada con éxito');
-    await loadData();
-    showSection('ventasMenu');
-  }catch(e){console.error(e); alert('Error al registrar la venta');}
-  return false;
+  await fetch(endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+  alert('Venta registrada con éxito');
+  showSection('ventasMenu');
 }
 
-window.addEventListener('DOMContentLoaded',()=>{ loadData(); });
+window.addEventListener('DOMContentLoaded',()=>loadData());
 </script>
 </body>
 </html>
