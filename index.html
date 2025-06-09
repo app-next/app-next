@@ -1,243 +1,113 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APP NEXT – SpreadAPI v21</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APP NEXT – Ventas (SpreadAPI)</title>
   <style>
-    :root {
-      --black: #000;
-      --white: #fff;
-      --blue: #0033A0;
-      --yellow: #FFD700;
-      --gray-bg: #f5f5f5;
-      --red: #E63946;
-    }
-    *, *:before, *:after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: sans-serif;
-      background: var(--gray-bg);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      background: var(--black);
-      text-align: center;
-      padding: 1rem;
-    }
-    header .logo {
-      height: 50px;
-    }
-    main {
-      flex: 1;
-      max-width: 900px;
-      margin: 1rem auto;
-      background: var(--white);
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    .menu,
-    .submenu {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    .menu .btn,
-    .submenu .subbtn {
-      padding: 0.75rem;
-      background: var(--blue);
-      color: var(--white);
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-      text-align: center;
-    }
-    .menu .btn:hover,
-    .submenu .subbtn:hover {
-      background: var(--yellow);
-      color: var(--black);
-    }
-    .hidden {
-      display: none !important;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      max-width: 600px;
-      margin: auto;
-    }
-    label {
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-    }
-    input,
-    select,
-    textarea {
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    input[readonly] {
-      background: #eee;
-    }
-    #restante.negative {
-      color: var(--red);
-    }
-    .nota {
-      font-size: 0.9rem;
-      color: var(--red);
-      text-align: right;
-    }
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-    .form-btn {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .submit-btn {
-      background: var(--blue);
-      color: var(--white);
-    }
-    .submit-btn:hover {
-      background: var(--yellow);
-      color: var(--black);
-    }
-    .back-btn {
-      background: #444;
-      color: var(--white);
-    }
-    .back-btn:hover {
-      background: var(--yellow);
-      color: var(--black);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th,
-    td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: left;
-    }
+    :root {--azul:#0033A0;--amarillo:#FFD700}
+    body{font-family:sans-serif;background:#f5f5f5;margin:0;display:flex;flex-direction:column;min-height:100vh}
+    header{background:#000;text-align:center;padding:1rem}
+    header img{height:50px}
+    main{flex:1;max-width:500px;margin:1rem auto;background:#fff;padding:1rem;border-radius:8px}
+    .btn{width:100%;padding:.75rem;margin:.5rem 0;border:none;border-radius:6px;font-size:1rem;color:#fff;background:var(--azul);cursor:pointer}
+    .btn:hover{background:var(--amarillo);color:#000}
+    .hidden{display:none}
+    form{display:flex;flex-direction:column;gap:.5rem}
+    label{font-size:.9rem;font-weight:600;display:flex;flex-direction:column}
+    input,select{padding:.5rem;border:1px solid #ccc;border-radius:6px}
+    input[readonly]{background:#eee}
+    .neg{color:#E63946}
+    table{width:100%;border-collapse:collapse;margin-top:1rem}
+    th,td{border:1px solid #ccc;padding:.5rem;text-align:left}
   </style>
 </head>
 <body>
-  <header><img src="logo.png" alt="NEXT Logo" class="logo" /></header>
-  <main>
-    <!-- Menú principal -->
-    <div id="mainMenu" class="menu">
-      <button class="btn" data-section="ventasMenu">Ventas</button>
-      <button class="btn">CRM</button>
-      <button class="btn">Diseños</button>
-      <button class="btn">Stock</button>
-      <button class="btn">Compras</button>
-      <button class="btn">Finanzas</button>
-      <button class="btn">Marketing</button>
-      <button class="btn">Agenda</button>
-    </div>
+<header><img src="logo.png" alt="NEXT"></header>
+<main>
+  <button id="btnVentas" class="btn">⇢ Ventas</button>
 
-    <!-- Submenú Ventas -->
-    <div id="ventasMenu" class="submenu hidden">
-      <button class="subbtn" data-section="formVenta">Registrar Venta</button>
-      <button class="subbtn" data-section="clientesRegistrados">Clientes Registrados</button>
-      <button class="subbtn" data-section="clientesDeuda">Clientes con Deudas</button>
-      <button class="subbtn" data-section="informeVentas">Informe de Ventas</button>
-      <button class="subbtn back-btn" data-section="mainMenu">Volver</button>
-    </div>
+  <!-- Panel Ventas -->
+  <section id="panelVentas" class="hidden">
+    <button id="btnVolver" class="btn">← Menú</button>
 
-    <!-- Formulario de Venta -->
-    <div id="formVenta" class="hidden">
-      <h2>Registrar Venta</h2>
-      <form id="ventaForm" onsubmit="return enviarVenta(event)">
-        <label>Cliente<input list="clientes-list" id="cliente" required autocomplete="off" /></label>
-        <datalist id="clientes-list"></datalist>
+    <h3>Nueva venta</h3>
+    <form id="fVenta">
+      <label>Cliente <input id="cli" list="dlCli" required></label>
+      <datalist id="dlCli"></datalist>
 
-        <label>Teléfono<input list="telefonos-list" id="telefono" required autocomplete="off" /></label>
-        <datalist id="telefonos-list"></datalist>
+      <label>Teléfono <input id="tel" required></label>
 
-        <label>Producto<input id="producto" required /></label>
-        <label>Cantidad<input id="cantidad" type="number" min="1" step="1" value="1" required /></label>
-        <label>Precio Unitario (USD)<input id="precio" type="number" step="0.01" value="0" required /></label>
-        <label>Tasa BCV<input id="tasa" type="number" step="0.01" value="1" /></label>
+      <label>Producto <input id="prod" required></label>
+      <label>Cantidad <input id="cant" type="number" min="1" value="1" required></label>
+      <label>Precio USD <input id="prec" type="number" step="0.01" value="0" required></label>
+      <label>Total USD <input id="tot" readonly></label>
 
-        <label>Total USD<input id="total" readonly /></label>
+      <button class="btn" type="submit">Registrar</button>
+    </form>
 
-        <label>Método de Pago 1
-          <select id="metodo1" required>
-            <option value="" disabled selected>Selecciona Método</option>
-            <option value="Efectivo_$">Efectivo $</option>
-            <option value="BS">BS</option>
-            <option value="Zinli">Zinli</option>
-            <option value="USDT">USDT</option>
-          </select>
-        </label>
-        <label>Monto Pago 1<input id="monto1" type="number" step="0.01" value="0" required /></label>
+    <h3>Últimas ventas</h3>
+    <div id="tabla"></div>
+  </section>
+</main>
 
-        <label>Método de Pago 2
-          <select id="metodo2">
-            <option value="">Ninguno</option>
-            <option value="Efectivo_$">Efectivo $</option>
-            <option value="BS">BS</option>
-            <option value="Zinli">Zinli</option>
-            <option value="USDT">USDT</option>
-          </select>
-        </label>
-        <label>Monto Pago 2<input id="monto2" type="number" step="0.01" value="0" /></label>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwQ7Rqj5FLEqikqXhDdCphpoY2_2cBPtinbv4nQNGw7n4uqFWcbGsr8KFVcdFEOlydcmQ/exec';
 
-        <label>Abono Total USD<input id="abono" readonly /></label>
-        <label>Restante USD<input id="restante" readonly /></label>
-        <div id="nota" class="nota"></div>
+const btnVentas = document.getElementById('btnVentas');
+const panel = document.getElementById('panelVentas');
+const btnVolver = document.getElementById('btnVolver');
 
-        <label>Asesor<input id="asesor" required /></label>
-        <label>Comentarios<textarea id="comentario"></textarea></label>
+btnVentas.onclick = () => {btnVentas.classList.add('hidden'); panel.classList.remove('hidden'); cargar();}
+btnVolver.onclick = () => {panel.classList.add('hidden'); btnVentas.classList.remove('hidden');}
 
-        <div class="form-actions">
-          <button type="button" class="form-btn back-btn" data-section="ventasMenu">Volver</button>
-          <button type="submit" class="form-btn submit-btn">Enviar</button>
-        </div>
-      </form>
-    </div>
+const f = document.getElementById('fVenta');
+const cant = document.getElementById('cant');
+const prec = document.getElementById('prec');
+const tot  = document.getElementById('tot');
 
-    <!-- Listados -->
-    <div id="clientesRegistrados" class="hidden">
-      <h2>Clientes Registrados</h2>
-      <div id="tablaClientes"></div>
-      <div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div>
-    </div>
+[cant,prec].forEach(i=>i.oninput = ()=> tot.value = (cant.value*prec.value).toFixed(2));
 
-    <div id="clientesDeuda" class="hidden">
-      <h2>Clientes con Deudas</h2>
-      <div id="tablaDeudas"></div>
-      <div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div>
-    </div>
+/* --- Leer ventas / llenar autocompletado --- */
+async function cargar(){
+  const r = await fetch(API,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({method:'GET',sheet:'Ventas'})
+  });
+  const data = await r.json();
 
-    <div id="informeVentas" class="hidden">
-      <h2>Informe de Ventas</h2>
-      <div id="tablaVentas"></div>
-      <div class="form-actions"><button class="form-btn back-btn" data-section="ventasMenu">Volver</button></div>
-    </div>
-  </main>
+  // tabla
+  const html = data.slice(-10).reverse().map(v=>
+    `<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.total}</td></tr>`).join('');
+  document.getElementById('tabla').innerHTML =
+    `<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Total USD</th></tr>${html}</table>`;
 
-  <script>
-    const API_URL="https://script.google.com/macros/s/AKfycbwVyOMe5KcCsnkLq2kxDoh4zU42XRYrHD3dwvdw-HF6G1kg8fXC0rNPdh
+  // datalist clientes
+  const dl = document.getElementById('dlCli');
+  dl.innerHTML = [...new Set(data.map(v=>v.cliente))].map(c=>`<option value="${c}">`).join('');
+}
+
+/* --- Enviar venta --- */
+f.onsubmit = async e=>{
+  e.preventDefault();
+  const payload = {
+    fecha:new Date().toISOString().split('T')[0],
+    cliente:cli.value,
+    telefono:tel.value,
+    producto:prod.value,
+    cantidad:+cant.value,
+    precio:+prec.value,
+    total:+tot.value
+  };
+  const res = await fetch(API,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({method:'POST',sheet:'Ventas',payload:payload})
+  });
+  if(res.ok){alert('Guardado'); f.reset(); tot.value=''; cargar();}
+  else alert('Error al guardar');
+};
+</script>
+</body>
+</html>
