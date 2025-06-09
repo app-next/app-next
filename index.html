@@ -17,7 +17,6 @@
     label{font-size:.9rem;font-weight:600;display:flex;flex-direction:column}
     input,select{padding:.5rem;border:1px solid #ccc;border-radius:6px}
     input[readonly]{background:#eee}
-    .neg{color:#E63946}
     table{width:100%;border-collapse:collapse;margin-top:1rem}
     th,td{border:1px solid #ccc;padding:.5rem;text-align:left}
   </style>
@@ -52,16 +51,16 @@
 </main>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbwQ7Rqj5FLEqikqXhDdCphpoY2_2cBPtinbv4nQNGw7n4uqFWcbGsr8KFVcdFEOlydcmQ/exec';
+const API = 'https://script.google.com/macros/s/AKfycbzyZ4XgVMvjZoX6QUYmNKyyIkbnhdVXd-MtfTZOzysWpSXRvH9ZXQE_-OSxGlg--LOK1A/exec';
 
 const btnVentas = document.getElementById('btnVentas');
-const panel = document.getElementById('panelVentas');
+const panel     = document.getElementById('panelVentas');
 const btnVolver = document.getElementById('btnVolver');
 
-btnVentas.onclick = () => {btnVentas.classList.add('hidden'); panel.classList.remove('hidden'); cargar();}
-btnVolver.onclick = () => {panel.classList.add('hidden'); btnVentas.classList.remove('hidden');}
+btnVentas.onclick = ()=>{ btnVentas.classList.add('hidden'); panel.classList.remove('hidden'); cargar(); }
+btnVolver.onclick = ()=>{ panel.classList.add('hidden');      btnVentas.classList.remove('hidden'); }
 
-const f = document.getElementById('fVenta');
+const f    = document.getElementById('fVenta');
 const cant = document.getElementById('cant');
 const prec = document.getElementById('prec');
 const tot  = document.getElementById('tot');
@@ -72,20 +71,19 @@ const tot  = document.getElementById('tot');
 async function cargar(){
   const r = await fetch(API,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({method:'GET',sheet:'Ventas'})
+    body: JSON.stringify({method:'GET',sheet:'Ventas'})
   });
   const data = await r.json();
 
-  // tabla
+  // tabla últimas 10
   const html = data.slice(-10).reverse().map(v=>
     `<tr><td>${v.fecha}</td><td>${v.cliente}</td><td>${v.producto}</td><td>${v.total}</td></tr>`).join('');
   document.getElementById('tabla').innerHTML =
     `<table><tr><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Total USD</th></tr>${html}</table>`;
 
   // datalist clientes
-  const dl = document.getElementById('dlCli');
-  dl.innerHTML = [...new Set(data.map(v=>v.cliente))].map(c=>`<option value="${c}">`).join('');
+  document.getElementById('dlCli').innerHTML =
+    [...new Set(data.map(v=>v.cliente))].map(c=>`<option value="${c}">`).join('');
 }
 
 /* --- Enviar venta --- */
@@ -102,11 +100,10 @@ f.onsubmit = async e=>{
   };
   const res = await fetch(API,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({method:'POST',sheet:'Ventas',payload:payload})
+    body: JSON.stringify({method:'POST',sheet:'Ventas',payload})
   });
-  if(res.ok){alert('Guardado'); f.reset(); tot.value=''; cargar();}
-  else alert('Error al guardar');
+  if(res.ok){ alert('Guardado'); f.reset(); tot.value=''; cargar(); }
+  else       alert('Error al guardar');
 };
 </script>
 </body>
