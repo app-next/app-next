@@ -51,129 +51,74 @@
         <button class="panel-btn back-btn" onclick="volver()">Volver</button>
     </div>
 
-    <script>
-        
-        
-        
-        function showPanel(id) {
-            console.log("Mostrando panel:", id);
-            const panels = ['mainPanel', 'ventaPanel', 'deudaPanel', 'registradosPanel', 'informePanel'];
-            panels.forEach(p => {
-                const el = document.getElementById(p);
-                if (el) el.style.display = 'none';
-            });
-            const panelId = id + 'Panel';
-            const target = document.getElementById(panelId);
-            if (target) {
-                target.style.display = 'block';
-                document.getElementById("debug").innerText = "Abriendo panel: " + id;
-                if (id === 'deuda') cargarLista('deuda', 'deudaLista');
-                if (id === 'registrados') cargarLista('registrados', 'registradosLista');
-                if (id === 'informe') cargarLista('informe', 'informeVentas');
-            } else {
-                document.getElementById("debug").innerText = "Panel no encontrado: " + panelId;
-                alert("No se encontró el panel: " + panelId);
-            }
+    
+<script>
+    function showPanel(id) {
+        console.log("Mostrando panel:", id);
+        const panels = ['mainPanel', 'ventaPanel', 'deudaPanel', 'registradosPanel', 'informePanel'];
+        panels.forEach(p => {
+            const el = document.getElementById(p);
+            if (el) el.style.display = 'none';
+        });
+        const panelId = id + 'Panel';
+        const target = document.getElementById(panelId);
+        if (target) {
+            target.style.display = 'block';
+            document.getElementById("debug").innerText = "Abriendo panel: " + id;
+            if (id === 'deuda') cargarLista('deuda', 'deudaLista');
+            if (id === 'registrados') cargarLista('registrados', 'registradosLista');
+            if (id === 'informe') cargarLista('informe', 'informeVentas');
+        } else {
+            document.getElementById("debug").innerText = "Panel no encontrado: " + panelId;
+            alert("No se encontró el panel: " + panelId);
         }
+    }
 
-        function volver() {
-            showPanel('main');
-        }
+    function volver() {
+        showPanel('main');
+    }
 
-        function cargarLista(tipo, contenedorId) {
-            const cont = document.getElementById(contenedorId);
-            cont.innerHTML = "Cargando datos desde hoja 'Ventas'...";
-            fetch("https://script.google.com/macros/s/AKfycbwVyOMe5KcCsnkLq2kxDoh4zU42XRYrHD3dwvdw-HF6G1kg8fXC0rNPdhO1Fjy96TFbDg/exec?sheet=Ventas")
-                .then(res => res.json())
-                .then(data => {
-                    if (!Array.isArray(data)) {
-                        cont.innerHTML = "Sin datos válidos.";
-                        return;
-                    }
-                    if (tipo === 'deuda') {
-                        const deudores = data.filter(row => parseFloat(row.restante_usd) > 0);
-                        cont.innerHTML = deudores.length > 0
-                            ? deudores.map(r => `<div><b>${r.cliente}</b> - Tel: ${r.telefono} - Debe: ${r.restante_usd}</div>`).join("")
-                            : "Sin clientes con deuda.";
-                    } else if (tipo === 'registrados') {
-                        const clientesUnicos = [...new Set(data.map(r => r.cliente))];
-                        cont.innerHTML = clientesUnicos.length > 0
-                            ? clientesUnicos.map(c => `<div>${c}</div>`).join("")
-                            : "Sin clientes registrados.";
-                    } else if (tipo === 'informe') {
-                        let total = 0, abono = 0, restante = 0;
-                        data.forEach(r => {
-                            total += parseFloat(r.total_usd) || 0;
-                            abono += parseFloat(r.abono_usd) || 0;
-                            restante += parseFloat(r.restante_usd) || 0;
-                        });
-                        cont.innerHTML = `
-                            <div><b>Total Vendido:</b> $${total.toFixed(2)}</div>
-                            <div><b>Total Abonado:</b> $${abono.toFixed(2)}</div>
-                            <div><b>Total Deuda:</b> $${restante.toFixed(2)}</div>
-                        `;
-                    }
-                })
-                .catch(err => {
-                    cont.innerHTML = "Error al cargar datos: " + err.message;
-                    document.getElementById("debug").innerText = "Error fetch: " + err.message;
-                });
-        }
-)
-                .catch(err => {
-                    cont.innerHTML = "Error al cargar datos: " + err.message;
-                });
-        }
-)
-                .catch(() => {
-                    document.getElementById(contenedorId).innerHTML = "Error al cargar los datos.";
-                });
-        }
-)
-            .then(res => res.text())
-            .then(msg => {
-                alert("Venta registrada correctamente.");
-                document.getElementById("ventaForm").reset();
-                document.getElementById("total_usd").value = "";
-                document.getElementById("abono_usd").value = "";
-                document.getElementById("restante_usd").value = "";
+    function cargarLista(tipo, contenedorId) {
+        const cont = document.getElementById(contenedorId);
+        cont.innerHTML = "Cargando datos desde hoja 'Ventas'...";
+        fetch("https://script.google.com/macros/s/AKfycbwVyOMe5KcCsnkLq2kxDoh4zU42XRYrHD3dwvdw-HF6G1kg8fXC0rNPdhO1Fjy96TFbDg/exec?sheet=Ventas")
+            .then(res => res.json())
+            .then(data => {
+                if (!Array.isArray(data)) {
+                    cont.innerHTML = "Sin datos válidos.";
+                    return;
+                }
+                if (tipo === 'deuda') {
+                    const deudores = data.filter(row => parseFloat(row.restante_usd) > 0);
+                    cont.innerHTML = deudores.length > 0
+                        ? deudores.map(r => `<div><b>${r.cliente}</b> - Tel: ${r.telefono} - Debe: ${r.restante_usd}</div>`).join("")
+                        : "Sin clientes con deuda.";
+                } else if (tipo === 'registrados') {
+                    const clientesUnicos = [...new Set(data.map(r => r.cliente))];
+                    cont.innerHTML = clientesUnicos.length > 0
+                        ? clientesUnicos.map(c => `<div>${c}</div>`).join("")
+                        : "Sin clientes registrados.";
+                } else if (tipo === 'informe') {
+                    let total = 0, abono = 0, restante = 0;
+                    data.forEach(r => {
+                        total += parseFloat(r.total_usd) || 0;
+                        abono += parseFloat(r.abono_usd) || 0;
+                        restante += parseFloat(r.restante_usd) || 0;
+                    });
+                    cont.innerHTML = `
+                        <div><b>Total Vendido:</b> $${total.toFixed(2)}</div>
+                        <div><b>Total Abonado:</b> $${abono.toFixed(2)}</div>
+                        <div><b>Total Deuda:</b> $${restante.toFixed(2)}</div>
+                    `;
+                }
             })
             .catch(err => {
-                alert("Error al registrar la venta: " + err);
+                cont.innerHTML = "Error al cargar datos: " + err.message;
+                document.getElementById("debug").innerText = "Error fetch: " + err.message;
             });
-        }
+    }
+</script>
 
-        // Cálculo automático
-        document.getElementById('cantidad').addEventListener('input', calcularTotal);
-        document.getElementById('precio_unitario').addEventListener('input', calcularTotal);
-        document.getElementById('monto_pago_1').addEventListener('input', calcularAbono);
-        document.getElementById('monto_pago_2').addEventListener('input', calcularAbono);
-        function calcularTotal() {
-            let cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
-            let precio = parseFloat(document.getElementById('precio_unitario').value) || 0;
-            let total = cantidad * precio;
-            document.getElementById('total_usd').value = total.toFixed(2);
-            calcularAbono();
-        }
-        function calcularAbono() {
-            let pago1 = parseFloat(document.getElementById('monto_pago_1').value) || 0;
-            let pago2 = parseFloat(document.getElementById('monto_pago_2').value) || 0;
-            let total = parseFloat(document.getElementById('total_usd').value) || 0;
-            let abono = pago1 + pago2;
-            document.getElementById('abono_usd').value = abono.toFixed(2);
-            document.getElementById('restante_usd').value = Math.max(0, total - abono).toFixed(2);
-        }
-
-        }
-        document.getElementById('cantidad').addEventListener('input', calcularTotal);
-        document.getElementById('precio_unitario').addEventListener('input', calcularTotal);
-        function calcularTotal() {
-            let cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
-            let precio = parseFloat(document.getElementById('precio_unitario').value) || 0;
-            let total = cantidad * precio;
-            document.getElementById('total_usd').value = total.toFixed(2);
-        }
-    </script>
 
     <div class="container" id="deudaPanel" style="display:none;">
         <h3>Clientes con Deuda</h3>
