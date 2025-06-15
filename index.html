@@ -52,34 +52,37 @@
 
     <script>
         
+        
         function showPanel(id) {
-            document.getElementById('mainPanel').style.display = 'none';
-            document.getElementById('ventaPanel').style.display = 'none';
-            document.getElementById('deudaPanel').style.display = 'none';
-            document.getElementById('registradosPanel').style.display = 'none';
-            document.getElementById('informePanel').style.display = 'none';
-            document.getElementById(id + 'Panel').style.display = 'block';
-            if (id === 'deuda') cargarLista('deuda', 'deudaLista');
-            if (id === 'registrados') cargarLista('registrados', 'registradosLista');
-            if (id === 'informe') cargarLista('informe', 'informeVentas');
+            const panels = ['mainPanel', 'ventaPanel', 'deudaPanel', 'registradosPanel', 'informePanel'];
+            panels.forEach(p => {
+                const el = document.getElementById(p);
+                if (el) el.style.display = 'none';
+            });
+            const panelId = id + 'Panel';
+            const target = document.getElementById(panelId);
+            if (target) {
+                target.style.display = 'block';
+                if (id === 'deuda') cargarLista('deuda', 'deudaLista');
+                if (id === 'registrados') cargarLista('registrados', 'registradosLista');
+                if (id === 'informe') cargarLista('informe', 'informeVentas');
+            } else {
+                alert("No se encontró el panel: " + panelId);
+            }
         }
 
         function volver() {
-            document.getElementById('mainPanel').style.display = 'block';
-            document.getElementById('ventaPanel').style.display = 'none';
-            document.getElementById('deudaPanel').style.display = 'none';
-            document.getElementById('registradosPanel').style.display = 'none';
-            document.getElementById('informePanel').style.display = 'none';
+            showPanel('main');
         }
 
-        
         function cargarLista(tipo, contenedorId) {
+            const cont = document.getElementById(contenedorId);
+            cont.innerHTML = "Cargando...";
             fetch("https://script.google.com/macros/s/AKfycbwVyOMe5KcCsnkLq2kxDoh4zU42XRYrHD3dwvdw-HF6G1kg8fXC0rNPdhO1Fjy96TFbDg/exec?sheet=Ventas")
                 .then(res => res.json())
                 .then(data => {
-                    const cont = document.getElementById(contenedorId);
                     if (!Array.isArray(data)) {
-                        cont.innerHTML = "Sin datos.";
+                        cont.innerHTML = "Sin datos válidos.";
                         return;
                     }
                     if (tipo === 'deuda') {
@@ -106,6 +109,11 @@
                         `;
                     }
                 })
+                .catch(err => {
+                    cont.innerHTML = "Error al cargar datos: " + err.message;
+                });
+        }
+)
                 .catch(() => {
                     document.getElementById(contenedorId).innerHTML = "Error al cargar los datos.";
                 });
