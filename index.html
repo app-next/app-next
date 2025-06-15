@@ -18,7 +18,8 @@
     </style>
 </head>
 <body>
-    <div class="container" id="mainPanel">
+    <div id="debug" style="color:red;text-align:center;margin-top:10px;"></div>
+<div class="container" id="mainPanel">
         <img src="logo.png" alt="Logo NEXT" id="logo">
         <h2>Panel de Ventas</h2>
         <button class="panel-btn" onclick="showPanel('venta')">Registrar venta</button>
@@ -53,7 +54,9 @@
     <script>
         
         
+        
         function showPanel(id) {
+            console.log("Mostrando panel:", id);
             const panels = ['mainPanel', 'ventaPanel', 'deudaPanel', 'registradosPanel', 'informePanel'];
             panels.forEach(p => {
                 const el = document.getElementById(p);
@@ -63,10 +66,12 @@
             const target = document.getElementById(panelId);
             if (target) {
                 target.style.display = 'block';
+                document.getElementById("debug").innerText = "Abriendo panel: " + id;
                 if (id === 'deuda') cargarLista('deuda', 'deudaLista');
                 if (id === 'registrados') cargarLista('registrados', 'registradosLista');
                 if (id === 'informe') cargarLista('informe', 'informeVentas');
             } else {
+                document.getElementById("debug").innerText = "Panel no encontrado: " + panelId;
                 alert("No se encontró el panel: " + panelId);
             }
         }
@@ -77,7 +82,7 @@
 
         function cargarLista(tipo, contenedorId) {
             const cont = document.getElementById(contenedorId);
-            cont.innerHTML = "Cargando...";
+            cont.innerHTML = "Cargando datos desde hoja 'Ventas'...";
             fetch("https://script.google.com/macros/s/AKfycbwVyOMe5KcCsnkLq2kxDoh4zU42XRYrHD3dwvdw-HF6G1kg8fXC0rNPdhO1Fjy96TFbDg/exec?sheet=Ventas")
                 .then(res => res.json())
                 .then(data => {
@@ -109,6 +114,12 @@
                         `;
                     }
                 })
+                .catch(err => {
+                    cont.innerHTML = "Error al cargar datos: " + err.message;
+                    document.getElementById("debug").innerText = "Error fetch: " + err.message;
+                });
+        }
+)
                 .catch(err => {
                     cont.innerHTML = "Error al cargar datos: " + err.message;
                 });
