@@ -1,1 +1,147 @@
-<!DOCTYPE html><html><head><title>NEXT</title></head><body>Reinstalando estructura...</body></html>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXT APP</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f2f4f8; color: #333; }
+    header { background: #000; color: white; padding: 12px; text-align: center; font-size: 18px; }
+    .logo { max-width: 80px; margin: 0 auto; display: block; }
+    .main-menu { display: flex; justify-content: space-around; flex-wrap: wrap; background: #e6e9ef; padding: 10px 0; }
+    .main-menu button { background: #0077cc; color: white; border: none; border-radius: 6px; padding: 10px 14px; margin: 5px; cursor: pointer; }
+    .main-menu button.active { background: #005fa3; }
+    .panel { display: none; max-width: 480px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    .form-group { margin-bottom: 12px; }
+    label { font-weight: bold; display: block; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+    .btn { width: 100%; background: #28a745; color: white; padding: 12px; border: none; border-radius: 5px; font-size: 16px; }
+    .sub-panel-nav { display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; gap: 5px; }
+    .sub-panel-nav button { flex: 1 1 45%; padding: 10px; border: none; background: #ccc; border-radius: 5px; }
+    .sub-panel-nav button.active { background: #0077cc; color: white; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="NEXT Logo" class="logo" />
+    <div>NEXT APP</div>
+  </header>
+
+  <div class="main-menu">
+    <button onclick="openMainPanel('ventas')" id="btnVentas" class="active">Ventas</button>
+    <button onclick="openMainPanel('admin')" id="btnAdmin">Administración</button>
+    <button onclick="openMainPanel('productos')" id="btnProductos">Productos</button>
+    <button onclick="openMainPanel('agenda')" id="btnAgenda">Agenda</button>
+  </div>
+
+  <!-- Panel VENTAS -->
+  <div class="panel" id="panelVentas" style="display:block;">
+    <div class="sub-panel-nav">
+      <button onclick="showSubPanel(event, 'registrarVenta')" class="active">Registrar venta</button>
+      <button onclick="showSubPanel(event, 'clientesDeuda')">Clientes con deuda</button>
+      <button onclick="showSubPanel(event, 'clientesRegistrados')">Clientes registrados</button>
+      <button onclick="showSubPanel(event, 'resumenVentas')">Informe de ventas</button>
+    </div>
+
+    <!-- Subpanel: Registrar venta -->
+    <div id="registrarVenta" class="ventas-subpanel">
+      <form onsubmit="enviarVenta(event)">
+        <div class="form-group"><label>Cliente</label><input type="text" id="cliente" required /></div>
+        <div class="form-group"><label>Teléfono</label><input type="tel" id="telefono" required /></div>
+        <div class="form-group"><label>Producto</label><input type="text" id="producto" required /></div>
+        <div class="form-group"><label>Cantidad</label><input type="number" id="cantidad" required /></div>
+        <div class="form-group"><label>Precio Unitario</label><input type="number" id="precio_unitario" required /></div>
+        <div class="form-group"><label>Total USD</label><input type="number" id="total_usd" readonly /></div>
+        <div class="form-group"><label>Método Pago 1</label><select id="metodo_pago_1"><option value="">Selecciona</option><option>USD</option><option>BS</option><option>Zinli</option><option>USDT</option></select></div>
+        <div class="form-group"><label>Monto Pago 1</label><input type="number" id="monto_pago_1" /></div>
+        <div class="form-group"><label>Método Pago 2</label><select id="metodo_pago_2"><option value="">Selecciona</option><option>USD</option><option>BS</option><option>Zinli</option><option>USDT</option></select></div>
+        <div class="form-group"><label>Monto Pago 2</label><input type="number" id="monto_pago_2" /></div>
+        <div class="form-group"><label>Tasa BCV</label><input type="number" id="tasa_bcv" /></div>
+        <div class="form-group"><label>Abono USD</label><input type="number" id="abono_usd" readonly /></div>
+        <div class="form-group"><label>Restante USD</label><input type="number" id="restante_usd" readonly /></div>
+        <div class="form-group"><label>Asesor</label><input type="text" id="asesor" /></div>
+        <div class="form-group"><label>Comentario</label><textarea id="comentario"></textarea></div>
+        <button type="submit" class="btn">Registrar venta</button>
+      </form>
+    </div>
+
+    <div id="clientesDeuda" class="ventas-subpanel hidden">Próximamente: clientes con deuda</div>
+    <div id="clientesRegistrados" class="ventas-subpanel hidden">Próximamente: clientes registrados</div>
+    <div id="resumenVentas" class="ventas-subpanel hidden">Próximamente: informe de ventas</div>
+  </div>
+
+  <div class="panel" id="panelAdmin">ADMINISTRACIÓN</div>
+  <div class="panel" id="panelProductos">PRODUCTOS</div>
+  <div class="panel" id="panelAgenda">AGENDA</div>
+
+  <script>
+    const panels = ['panelVentas', 'panelAdmin', 'panelProductos', 'panelAgenda'];
+    function openMainPanel(panel) {
+      panels.forEach(p => document.getElementById(p).style.display = 'none');
+      document.querySelectorAll('.main-menu button').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel' + panel.charAt(0).toUpperCase() + panel.slice(1)).style.display = 'block';
+      document.getElementById('btn' + panel.charAt(0).toUpperCase() + panel.slice(1)).classList.add('active');
+    }
+
+    function showSubPanel(evt, id) {
+      document.querySelectorAll('.ventas-subpanel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.sub-panel-nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.remove('hidden');
+      evt.target.classList.add('active');
+    }
+
+    document.getElementById('cantidad').addEventListener('input', calcularTotal);
+    document.getElementById('precio_unitario').addEventListener('input', calcularTotal);
+    document.getElementById('monto_pago_1').addEventListener('input', calcularAbono);
+    document.getElementById('monto_pago_2').addEventListener('input', calcularAbono);
+
+    function calcularTotal() {
+      let cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+      let precio = parseFloat(document.getElementById('precio_unitario').value) || 0;
+      document.getElementById('total_usd').value = (cantidad * precio).toFixed(2);
+      calcularAbono();
+    }
+
+    function calcularAbono() {
+      let pago1 = parseFloat(document.getElementById('monto_pago_1').value) || 0;
+      let pago2 = parseFloat(document.getElementById('monto_pago_2').value) || 0;
+      let total = parseFloat(document.getElementById('total_usd').value) || 0;
+      let abono = pago1 + pago2;
+      document.getElementById('abono_usd').value = abono.toFixed(2);
+      document.getElementById('restante_usd').value = Math.max(0, total - abono).toFixed(2);
+    }
+
+    function enviarVenta(e) {
+      e.preventDefault();
+      const data = {
+        cliente: cliente.value, telefono: telefono.value, producto: producto.value,
+        cantidad: cantidad.value, precio_unitario: precio_unitario.value, total_usd: total_usd.value,
+        metodo_pago_1: metodo_pago_1.value, monto_pago_1: monto_pago_1.value,
+        metodo_pago_2: metodo_pago_2.value, monto_pago_2: monto_pago_2.value,
+        tasa_bcv: tasa_bcv.value, abono_usd: abono_usd.value, restante_usd: restante_usd.value,
+        asesor: asesor.value, comentario: comentario.value
+      };
+      if ((data.monto_pago_1 > 0 && !data.metodo_pago_1) || (data.monto_pago_2 > 0 && !data.metodo_pago_2)) {
+        alert("Si hay monto, selecciona método de pago.");
+        return;
+      }
+      if ((data.metodo_pago_1 === "BS" || data.metodo_pago_2 === "BS") && (!data.tasa_bcv || data.tasa_bcv == 0)) {
+        alert("Indica tasa BCV para pagos en bolívares.");
+        return;
+      }
+      fetch("https://script.google.com/macros/s/AKfycbwVyOMe5KcCsnkLq2kxDoh4zU42XRYrHD3dwvdw-HF6G1kg8fXC0rNPdhO1Fjy96TFbDg/exec", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      }).then(r => r.text()).then(msg => {
+        alert("Venta registrada correctamente.");
+        document.querySelector("form").reset();
+        total_usd.value = ""; abono_usd.value = ""; restante_usd.value = "";
+      }).catch(err => alert("Error: " + err.message));
+    }
+  </script>
+</body>
+</html>
