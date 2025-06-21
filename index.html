@@ -3,58 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Panel de Ventas - NEXT</title>
+  <title>Ventas - NEXT</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
       margin: 0;
       padding: 0;
-      background: #f7f7f7;
     }
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: auto;
-      padding: 1.5rem;
-      background: white;
+      background: #fff;
+      padding: 20px;
+      margin-top: 30px;
+      border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 2rem;
-      border-radius: 12px;
     }
     h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
-    input, select, textarea, button {
+    input, select, textarea {
       width: 100%;
-      margin: 0.5rem 0;
-      padding: 0.7rem;
-      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
       border: 1px solid #ccc;
+      border-radius: 5px;
       box-sizing: border-box;
     }
     button {
-      background: #007bff;
+      background-color: #28a745;
       color: white;
-      font-weight: bold;
       border: none;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 5px;
       cursor: pointer;
     }
     button:hover {
-      background: #0056b3;
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Registrar Venta</h2>
-    <form id="ventaForm" onsubmit="enviarVenta(event)">
-      <input type="text" placeholder="Cliente" id="cliente" required />
-      <input type="text" placeholder="Teléfono" id="telefono" />
-      <input type="text" placeholder="Producto" id="producto" />
-      <input type="number" placeholder="Cantidad" id="cantidad" required />
-      <input type="number" placeholder="Precio Unitario" id="precio_unitario" required step="0.01" />
+    <form id="ventaForm" onsubmit="registrarVenta(event)">
+      <input type="text" id="cliente" placeholder="Cliente" required />
+      <input type="text" id="telefono" placeholder="Teléfono" />
+      <input type="text" id="producto" placeholder="Producto" />
+      <input type="number" id="cantidad" placeholder="Cantidad" required />
+      <input type="number" id="precio_unitario" placeholder="Precio Unitario" step="0.01" required />
       <input type="text" id="total_usd" placeholder="Total USD" readonly />
       <select id="metodo_pago_1">
-        <option value="">Método Pago 1</option>
+        <option value="">Método de Pago 1</option>
         <option value="Efectivo">Efectivo</option>
         <option value="BS">BS</option>
         <option value="Zinli">Zinli</option>
@@ -62,7 +66,7 @@
       </select>
       <input type="number" id="monto_pago_1" placeholder="Monto Pago 1" step="0.01" />
       <select id="metodo_pago_2">
-        <option value="">Método Pago 2</option>
+        <option value="">Método de Pago 2</option>
         <option value="Efectivo">Efectivo</option>
         <option value="BS">BS</option>
         <option value="Zinli">Zinli</option>
@@ -78,28 +82,28 @@
     </form>
   </div>
   <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbwVyOMe5KcCsnkLq2kxDoh4zU42XRYrHD3dwdw-HF6G1kg8fXC0rNPdhO1Fjy96TFbDg/exec";
+    const endpoint = "https://script.google.com/macros/s/AKfycbxpaVldshku5oRYcyAxpzmeeW6fRZ2OCg0kTiYPS2I7L0bYMoDCSLND-42jcI9yX6u-QA/exec";
 
-    function calcularTotal() {
-      const cantidad = parseFloat(document.getElementById("cantidad").value) || 0;
-      const precio = parseFloat(document.getElementById("precio_unitario").value) || 0;
+    function calcularTotales() {
+      const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+      const precio = parseFloat(document.getElementById('precio_unitario').value) || 0;
       const total = cantidad * precio;
-      document.getElementById("total_usd").value = total.toFixed(2);
+      document.getElementById('total_usd').value = total.toFixed(2);
 
-      const abono1 = parseFloat(document.getElementById("monto_pago_1").value) || 0;
-      const abono2 = parseFloat(document.getElementById("monto_pago_2").value) || 0;
-      const abono = abono1 + abono2;
-      document.getElementById("abono_usd").value = abono.toFixed(2);
-      document.getElementById("restante_usd").value = (total - abono).toFixed(2);
+      const pago1 = parseFloat(document.getElementById('monto_pago_1').value) || 0;
+      const pago2 = parseFloat(document.getElementById('monto_pago_2').value) || 0;
+      const abono = pago1 + pago2;
+      document.getElementById('abono_usd').value = abono.toFixed(2);
+      document.getElementById('restante_usd').value = (total - abono).toFixed(2);
     }
 
-    document.querySelectorAll("#cantidad, #precio_unitario, #monto_pago_1, #monto_pago_2").forEach(el => {
-      el.addEventListener("input", calcularTotal);
+    document.querySelectorAll('#cantidad, #precio_unitario, #monto_pago_1, #monto_pago_2').forEach(el => {
+      el.addEventListener('input', calcularTotales);
     });
 
-    async function enviarVenta(e) {
+    async function registrarVenta(e) {
       e.preventDefault();
-      const form = document.getElementById("ventaForm");
+      const form = document.getElementById('ventaForm');
       const data = {
         cliente: form.cliente.value,
         telefono: form.telefono.value,
@@ -119,18 +123,18 @@
       };
 
       try {
-        const response = await fetch(endpoint, {
+        const res = await fetch(endpoint, {
           method: "POST",
-          body: JSON.stringify(data),
+          body: JSON.stringify(data)
         });
-        if (response.ok) {
-          alert("Venta registrada correctamente");
+        if (res.ok) {
+          alert("Venta registrada exitosamente");
           form.reset();
         } else {
-          alert("Error al registrar: " + response.statusText);
+          alert("Error al registrar: " + res.statusText);
         }
-      } catch (error) {
-        alert("Error: " + error.message);
+      } catch (err) {
+        alert("Error de conexión: " + err.message);
       }
     }
   </script>
