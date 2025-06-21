@@ -3,90 +3,124 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Ventas NEXT</title>
+    <title>Registro de Ventas - NEXT</title>
+    <link rel="icon" href="logo.png">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .logo { width: 150px; margin-bottom: 20px; }
-        form { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; }
-        input, select, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: 1px solid #ccc; }
-        button { background: #007BFF; color: white; border: none; }
-        .mensaje { margin-top: 10px; color: green; }
-        .error { margin-top: 10px; color: red; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #111;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, select, textarea, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: .75rem;
+            font-size: 1rem;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .logo {
+            max-height: 60px;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="NEXT Logo" class="logo">
-    <form onsubmit="enviarVenta(event)">
-        <input type="text" id="cliente" placeholder="Cliente" required>
-        <input type="text" id="telefono" placeholder="Teléfono" required>
-        <input type="text" id="producto" placeholder="Producto" required>
-        <input type="number" id="cantidad" placeholder="Cantidad" required>
-        <input type="number" id="precio_unitario" placeholder="Precio Unitario" required>
-        <input type="number" id="total_usd" placeholder="Total USD" required>
-        <select id="metodo_pago_1" required>
-            <option value="">Método Pago 1</option>
-            <option value="Efectivo_$">Efectivo $</option>
-            <option value="Zinli">Zinli</option>
-            <option value="Pago Móvil">Pago Móvil</option>
-        </select>
-        <input type="number" id="monto_pago_1" placeholder="Monto Pago 1" required>
-        <select id="metodo_pago_2">
-            <option value="">Método Pago 2 (opcional)</option>
-            <option value="Efectivo_$">Efectivo $</option>
-            <option value="Zinli">Zinli</option>
-            <option value="Pago Móvil">Pago Móvil</option>
-        </select>
-        <input type="number" id="monto_pago_2" placeholder="Monto Pago 2 (opcional)">
-        <input type="number" id="tasa_bcv" placeholder="Tasa BCV">
-        <input type="number" id="abono_usd" placeholder="Abono USD">
-        <input type="number" id="restante_usd" placeholder="Restante USD">
-        <input type="text" id="asesor" placeholder="Asesor">
-        <input type="text" id="comentario" placeholder="Comentario">
-        <input type="date" id="fecha">
-        <button type="submit">Registrar</button>
-        <div class="mensaje" id="mensaje"></div>
-        <div class="error" id="error"></div>
-    </form>
-
+    <header>
+        <img src="logo.png" alt="NEXT Logo" class="logo">
+        <h1>Registro de Ventas</h1>
+    </header>
+    <div class="container">
+        <form onsubmit="enviarVenta(event)">
+            <input type="text" id="fecha" placeholder="Fecha (dd/mm/yyyy)" required>
+            <input type="text" id="cliente" placeholder="Cliente" required>
+            <input type="text" id="telefono" placeholder="Teléfono" required>
+            <input type="text" id="producto" placeholder="Producto" required>
+            <input type="number" id="cantidad" placeholder="Cantidad" required>
+            <input type="number" id="precio_unitario" placeholder="Precio Unitario (USD)" required>
+            <input type="number" id="total_usd" placeholder="Total USD" required>
+            <select id="metodo_pago_1" required>
+                <option value="">Método Pago 1</option>
+                <option value="Efectivo_$">Efectivo $</option>
+                <option value="Zinli">Zinli</option>
+                <option value="Pago Móvil">Pago Móvil</option>
+            </select>
+            <input type="number" id="monto_pago_1" placeholder="Monto Pago 1" required>
+            <select id="metodo_pago_2">
+                <option value="">Método Pago 2 (opcional)</option>
+                <option value="Efectivo_$">Efectivo $</option>
+                <option value="Zinli">Zinli</option>
+                <option value="Pago Móvil">Pago Móvil</option>
+            </select>
+            <input type="number" id="monto_pago_2" placeholder="Monto Pago 2 (opcional)">
+            <input type="number" id="tasa_bcv" placeholder="Tasa BCV" required>
+            <input type="number" id="abono_usd" placeholder="Abono USD" required>
+            <input type="number" id="restante_usd" placeholder="Restante USD" required>
+            <input type="text" id="asesor" placeholder="Asesor" required>
+            <textarea id="comentario" placeholder="Comentario (opcional)"></textarea>
+            <button type="submit">Registrar</button>
+            <div id="mensaje"></div>
+        </form>
+    </div>
     <script>
-        async function enviarVenta(event) {
-            event.preventDefault();
+        function enviarVenta(e) {
+            e.preventDefault();
             const datos = {
-                fecha: document.getElementById("fecha").value,
-                cliente: document.getElementById("cliente").value,
-                telefono: document.getElementById("telefono").value,
-                producto: document.getElementById("producto").value,
-                cantidad: document.getElementById("cantidad").value,
-                precio_unitario: document.getElementById("precio_unitario").value,
-                total_usd: document.getElementById("total_usd").value,
-                metodo_pago_1: document.getElementById("metodo_pago_1").value,
-                monto_pago_1: document.getElementById("monto_pago_1").value,
-                metodo_pago_2: document.getElementById("metodo_pago_2").value,
-                monto_pago_2: document.getElementById("monto_pago_2").value,
-                tasa_bcv: document.getElementById("tasa_bcv").value,
-                abono_usd: document.getElementById("abono_usd").value,
-                restante_usd: document.getElementById("restante_usd").value,
-                asesor: document.getElementById("asesor").value,
-                comentario: document.getElementById("comentario").value
+                fecha: document.getElementById('fecha').value,
+                cliente: document.getElementById('cliente').value,
+                telefono: document.getElementById('telefono').value,
+                producto: document.getElementById('producto').value,
+                cantidad: document.getElementById('cantidad').value,
+                precio_unitario: document.getElementById('precio_unitario').value,
+                total_usd: document.getElementById('total_usd').value,
+                metodo_pago_1: document.getElementById('metodo_pago_1').value,
+                monto_pago_1: document.getElementById('monto_pago_1').value,
+                metodo_pago_2: document.getElementById('metodo_pago_2').value,
+                monto_pago_2: document.getElementById('monto_pago_2').value,
+                tasa_bcv: document.getElementById('tasa_bcv').value,
+                abono_usd: document.getElementById('abono_usd').value,
+                restante_usd: document.getElementById('restante_usd').value,
+                asesor: document.getElementById('asesor').value,
+                comentario: document.getElementById('comentario').value
             };
 
-            const mensaje = document.getElementById("mensaje");
-            const error = document.getElementById("error");
-            mensaje.textContent = "";
-            error.textContent = "";
-
-            try {
-                const respuesta = await fetch("https://script.google.com/macros/s/AKfycbxpaVldshku5oRYcyAxpzmeeW6fRZ2OCg0kTiYPS2I7L0bYMoDCSLND-42jcI9yX6u-QA/exec", {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(datos)
-                });
-                mensaje.textContent = "✅ Venta registrada exitosamente.";
-            } catch (e) {
-                error.textContent = "❌ Error al registrar la venta.";
-                console.error(e);
-            }
+            fetch("https://script.google.com/macros/s/AKfycbxpaVldshku5oRYcyAxpzmeeW6fRZ2OCg0kTiYPS2I7L0bYMoDCSLND-42jcI9yX6u-QA/exec", {
+                method: "POST",
+                body: JSON.stringify(datos),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(res => res.json())
+            .then(respuesta => {
+                document.getElementById("mensaje").innerText = "✅ Venta registrada exitosamente.";
+            })
+            .catch(err => {
+                document.getElementById("mensaje").innerText = "❌ Error al registrar la venta.";
+                console.error(err);
+            });
         }
     </script>
 </body>
