@@ -11,7 +11,7 @@
 <body>
 <img alt="NEXT Logo" src="logo.png" style="max-width: 150px; margin: 1rem auto; display: block;"/>
 <h2 style="text-align:center;">Registrar Venta</h2>
-<form id="formulario">
+<form id="formulario"><input id="fecha" name="fecha" type="hidden"/>
 <input name="cliente" placeholder="Cliente" required="" type="text"/>
 <input name="telefono" placeholder="Teléfono" required="" type="text"/>
 <input name="producto" placeholder="Producto" required="" type="text"/>
@@ -96,5 +96,12 @@
       }
     };
   </script>
-</body>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const now = new Date();
+  const fecha = now.toLocaleDateString('es-VE');
+  const hora = now.toLocaleTimeString('es-VE');
+  document.getElementById("fecha").value = fecha + " " + hora;
+});
+</script></body>
 </html>
