@@ -2,131 +2,59 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Registrar Venta</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background: white;
-            margin-top: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #004aad;
-            color: white;
-            padding: 12px;
-            border: none;
-            width: 100%;
-            font-size: 16px;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #00357c;
-        }
-        #mensaje {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .volver {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .volver a {
-            text-decoration: none;
-            color: #004aad;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Ventas - NEXT</title>
+  <link rel="stylesheet" href="estilos.css"/>
 </head>
 <body>
-    <div class="container">
-        <h2>Registrar Venta</h2>
-        <form id="ventaForm">
-            <input type="text" id="cliente" placeholder="Cliente" required>
-            <input type="text" id="telefono" placeholder="Teléfono" required>
-            <input type="text" id="producto" placeholder="Producto" required>
-            <input type="number" id="cantidad" placeholder="Cantidad" required>
-            <input type="number" id="precio_unitario" placeholder="Precio Unitario" required>
-            <input type="number" id="total_usd" placeholder="Total USD" required>
-            <select id="metodo_pago_1">
-                <option value="">Método de pago 1</option>
-                <option value="Zinli">Zinli</option>
-                <option value="Efectivo_Bs">Efectivo Bs</option>
-                <option value="Efectivo_$">Efectivo $</option>
-            </select>
-            <input type="number" id="monto_pago_1" placeholder="Monto pago 1">
-            <select id="metodo_pago_2">
-                <option value="">Método de pago 2</option>
-                <option value="Zinli">Zinli</option>
-                <option value="Efectivo_Bs">Efectivo Bs</option>
-                <option value="Efectivo_$">Efectivo $</option>
-            </select>
-            <input type="number" id="monto_pago_2" placeholder="Monto pago 2">
-            <input type="number" id="tasa_bcv" placeholder="Tasa BCV">
-            <input type="number" id="abono_usd" placeholder="Abono USD">
-            <input type="number" id="restante_usd" placeholder="Restante USD">
-            <input type="text" id="asesor" placeholder="Asesor">
-            <textarea id="comentario" placeholder="Comentario"></textarea>
-            <button type="submit">Enviar</button>
-            <div id="mensaje"></div>
-        </form>
-        <div class="volver"><a href="index.html">← Volver al inicio</a></div>
-    </div>
-    <script>
-        const formulario = document.getElementById("ventaForm");
-        formulario.addEventListener("submit", function(e) {
-            e.preventDefault();
-            const data = {
-                cliente: document.getElementById("cliente").value,
-                telefono: document.getElementById("telefono").value,
-                producto: document.getElementById("producto").value,
-                cantidad: document.getElementById("cantidad").value,
-                precio_unitario: document.getElementById("precio_unitario").value,
-                total_usd: document.getElementById("total_usd").value,
-                metodo_pago_1: document.getElementById("metodo_pago_1").value,
-                monto_pago_1: document.getElementById("monto_pago_1").value,
-                metodo_pago_2: document.getElementById("metodo_pago_2").value,
-                monto_pago_2: document.getElementById("monto_pago_2").value,
-                tasa_bcv: document.getElementById("tasa_bcv").value,
-                abono_usd: document.getElementById("abono_usd").value,
-                restante_usd: document.getElementById("restante_usd").value,
-                asesor: document.getElementById("asesor").value,
-                comentario: document.getElementById("comentario").value
-            };
+  <img src="logo.png" alt="NEXT Logo" style="max-width: 150px; margin: 1rem auto; display: block;">
+  <form id="formulario">
+    <input type="text" name="codigo" placeholder="Código" required />
+    <input type="text" name="cliente" placeholder="Cliente" required />
+    <input type="text" name="producto" placeholder="Producto" required />
+    <input type="number" name="cantidad" placeholder="Cantidad" required />
+    <input type="number" name="precio" placeholder="Precio Unitario" required />
+    <input type="text" name="metodo_pago1" placeholder="Método Pago 1" required />
+    <input type="number" name="monto1" placeholder="Monto Pago 1" required />
+    <input type="text" name="metodo_pago2" placeholder="Método Pago 2 (opcional)" />
+    <input type="number" name="monto2" placeholder="Monto Pago 2 (opcional)" />
+    <input type="number" name="tasa" placeholder="Tasa BCV" />
+    <input type="text" name="fecha" placeholder="Fecha" required />
+    <textarea name="observaciones" placeholder="Observaciones"></textarea>
+    <button type="submit">Enviar</button>
+  </form>
+  <p id="mensaje"></p>
 
-            fetch("https://script.google.com/macros/s/AKfycbwWIZfPPzqT1RAvzamXDVduCDNPXd036HPbJtwvKzfh5VoaYAAeltsZPW-JtsslA3E0QQ/exec", {
-                method: "POST",
-                body: JSON.stringify(data),
-                headers: { "Content-Type": "application/json" }
-            })
-            .then(res => res.json())
-            .then(res => {
-                document.getElementById("mensaje").innerText = "✅ Venta registrada correctamente.";
-                formulario.reset();
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById("mensaje").innerText = "❌ Error al registrar la venta.";
-            });
+  <script>
+    const formulario = document.getElementById("formulario");
+    const mensaje = document.getElementById("mensaje");
+    const endpoint = "https://script.google.com/macros/s/AKfycbxpaVldshku5oRYcyAxpzmeeW6fRZ20Cg8kTiYPS2I7L0bYMoDCSLND-42jcI9yX6u-QA/exec";
+
+    formulario.onsubmit = async (e) => {
+      e.preventDefault();
+      const datos = Object.fromEntries(new FormData(formulario).entries());
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          body: JSON.stringify(datos),
         });
-    </script>
+
+        if (res.ok) {
+          mensaje.textContent = "✅ Venta registrada correctamente.";
+          mensaje.style.color = "green";
+          formulario.reset();
+        } else {
+          mensaje.textContent = "❌ Error al registrar la venta.";
+          mensaje.style.color = "red";
+        }
+      } catch (err) {
+        mensaje.textContent = "❌ Error al registrar la venta.";
+        mensaje.style.color = "red";
+        console.error(err);
+      }
+    };
+  </script>
 </body>
 </html>
