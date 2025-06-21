@@ -1,37 +1,36 @@
 
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrar Venta</title>
-  <link rel="stylesheet" href="estilos.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registrar Venta</title>
+<link href="estilos.css" rel="stylesheet"/>
 </head>
 <body>
-  <img src="logo.png" alt="NEXT Logo" style="max-width: 150px; margin: 1rem auto; display: block;">
-  <h2 style="text-align:center;">Registrar Venta</h2>
-  <form id="formulario">
-    <input name="fecha" type="date" required placeholder="Fecha" />
-    <input name="cliente" type="text" required placeholder="Cliente" />
-    <input name="telefono" type="text" required placeholder="Teléfono" />
-    <input name="producto" type="text" required placeholder="Producto" />
-    <input name="cantidad" type="number" required placeholder="Cantidad" />
-    <input name="precio_unitario" type="number" required placeholder="Precio Unitario" />
-    <input name="total_usd" type="number" readonly placeholder="Total (USD)" />
-    <input name="metodo_pago_1" type="text" placeholder="Método de Pago 1" />
-    <input name="monto_pago_1" type="number" placeholder="Monto Pago 1" />
-    <input name="metodo_pago_2" type="text" placeholder="Método de Pago 2 (opcional)" />
-    <input name="monto_pago_2" type="number" placeholder="Monto Pago 2 (opcional)" />
-    <input name="tasa_bcv" type="number" step="0.01" placeholder="Tasa BCV (si aplica Bs)" />
-    <input name="abono_usd" type="number" readonly placeholder="Abono (USD)" />
-    <input name="restante_usd" type="number" readonly placeholder="Restante (USD)" />
-    <input name="asesor" type="text" placeholder="Asesor" />
-    <textarea name="comentario" placeholder="Comentario"></textarea>
-    <button type="submit">Registrar</button>
-  </form>
-  <p id="mensaje"></p>
-
-  <script>
+<img alt="NEXT Logo" src="logo.png" style="max-width: 150px; margin: 1rem auto; display: block;"/>
+<h2 style="text-align:center;">Registrar Venta</h2>
+<form id="formulario">
+<input name="cliente" placeholder="Cliente" required="" type="text"/>
+<input name="telefono" placeholder="Teléfono" required="" type="text"/>
+<input name="producto" placeholder="Producto" required="" type="text"/>
+<input name="cantidad" placeholder="Cantidad" required="" type="number"/>
+<input name="precio_unitario" placeholder="Precio Unitario" required="" type="number"/>
+<input name="total_usd" placeholder="Total (USD)" readonly="" type="number"/>
+<select name="metodo_pago_1"><option value="">Selecciona un método</option><option value="BS">Bolívares</option><option value="ZELLE">Zelle</option><option value="EFECTIVO">Efectivo</option><option value="PAGO MOVIL">Pago Móvil</option><option value="TRANSFERENCIA">Transferencia</option><option value="RESERVADO">Reservado</option><option value="DIVISA EFECTIVO">Divisa en efectivo</option></select>
+<input name="monto_pago_1" placeholder="Monto Pago 1" type="number"/>
+<select name="metodo_pago_2"><option value="">Selecciona un método</option><option value="BS">Bolívares</option><option value="ZELLE">Zelle</option><option value="EFECTIVO">Efectivo</option><option value="PAGO MOVIL">Pago Móvil</option><option value="TRANSFERENCIA">Transferencia</option><option value="RESERVADO">Reservado</option><option value="DIVISA EFECTIVO">Divisa en efectivo</option></select>
+<input name="monto_pago_2" placeholder="Monto Pago 2 (opcional)" type="number"/>
+<input name="tasa_bcv" placeholder="Tasa BCV (si aplica Bs)" step="0.01" type="number"/>
+<input name="abono_usd" placeholder="Abono (USD)" readonly="" type="number"/>
+<input name="restante_usd" placeholder="Restante (USD)" readonly="" type="number"/>
+<input name="asesor" placeholder="Asesor" type="text"/>
+<textarea name="comentario" placeholder="Comentario"></textarea>
+<button type="submit">Registrar</button>
+</form>
+<p id="mensaje"></p>
+<script>
     const formulario = document.getElementById("formulario");
     const mensaje = document.getElementById("mensaje");
 
