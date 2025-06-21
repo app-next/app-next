@@ -3,104 +3,90 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Venta</title>
+    <title>Panel de Ventas NEXT</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
-            background-color: #f4f4f4;
-        }
-        h2 {
-            text-align: center;
-        }
-        input, select, textarea, button {
-            width: 100%;
-            padding: 8px;
-            margin-top: 6px;
-            margin-bottom: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .form-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .logo { width: 150px; margin-bottom: 20px; }
+        form { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; }
+        input, select, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: 1px solid #ccc; }
+        button { background: #007BFF; color: white; border: none; }
+        .mensaje { margin-top: 10px; color: green; }
+        .error { margin-top: 10px; color: red; }
     </style>
 </head>
 <body>
-    <div class="form-section">
-        <h2>Registrar Venta</h2>
-        <form id="ventaForm" onsubmit="enviarVenta(event)">
-            <input type="text" name="cliente" placeholder="Cliente" required>
-            <input type="text" name="telefono" placeholder="Teléfono" required>
-            <input type="text" name="producto" placeholder="Producto" required>
-            <input type="number" name="cantidad" placeholder="Cantidad" required>
-            <input type="number" step="0.01" name="precio_unitario" placeholder="Precio Unitario" required>
-            <input type="number" step="0.01" name="total_usd" placeholder="Total USD" required>
-            <select name="metodo_pago_1" required>
-                <option value="">Método Pago 1</option>
-                <option>Efectivo_$</option>
-                <option>BS</option>
-                <option>Zinli</option>
-                <option>USDT</option>
-            </select>
-            <input type="number" step="0.01" name="monto_pago_1" placeholder="Monto Pago 1" required>
-            <select name="metodo_pago_2">
-                <option value="">Método Pago 2 (opcional)</option>
-                <option>Efectivo_$</option>
-                <option>BS</option>
-                <option>Zinli</option>
-                <option>USDT</option>
-            </select>
-            <input type="number" step="0.01" name="monto_pago_2" placeholder="Monto Pago 2 (opcional)">
-            <input type="number" step="0.01" name="tasa_bcv" placeholder="Tasa BCV">
-            <input type="number" step="0.01" name="abono_usd" placeholder="Abono USD">
-            <input type="number" step="0.01" name="restante_usd" placeholder="Restante USD">
-            <input type="text" name="asesor" placeholder="Asesor">
-            <textarea name="comentario" placeholder="Comentario"></textarea>
-            <button type="submit">Registrar</button>
-        </form>
-        <p id="respuesta"></p>
-    </div>
+    <img src="logo.png" alt="NEXT Logo" class="logo">
+    <form onsubmit="enviarVenta(event)">
+        <input type="text" id="cliente" placeholder="Cliente" required>
+        <input type="text" id="telefono" placeholder="Teléfono" required>
+        <input type="text" id="producto" placeholder="Producto" required>
+        <input type="number" id="cantidad" placeholder="Cantidad" required>
+        <input type="number" id="precio_unitario" placeholder="Precio Unitario" required>
+        <input type="number" id="total_usd" placeholder="Total USD" required>
+        <select id="metodo_pago_1" required>
+            <option value="">Método Pago 1</option>
+            <option value="Efectivo_$">Efectivo $</option>
+            <option value="Zinli">Zinli</option>
+            <option value="Pago Móvil">Pago Móvil</option>
+        </select>
+        <input type="number" id="monto_pago_1" placeholder="Monto Pago 1" required>
+        <select id="metodo_pago_2">
+            <option value="">Método Pago 2 (opcional)</option>
+            <option value="Efectivo_$">Efectivo $</option>
+            <option value="Zinli">Zinli</option>
+            <option value="Pago Móvil">Pago Móvil</option>
+        </select>
+        <input type="number" id="monto_pago_2" placeholder="Monto Pago 2 (opcional)">
+        <input type="number" id="tasa_bcv" placeholder="Tasa BCV">
+        <input type="number" id="abono_usd" placeholder="Abono USD">
+        <input type="number" id="restante_usd" placeholder="Restante USD">
+        <input type="text" id="asesor" placeholder="Asesor">
+        <input type="text" id="comentario" placeholder="Comentario">
+        <input type="date" id="fecha">
+        <button type="submit">Registrar</button>
+        <div class="mensaje" id="mensaje"></div>
+        <div class="error" id="error"></div>
+    </form>
 
     <script>
-        function enviarVenta(e) {
-            e.preventDefault();
-            const form = document.getElementById('ventaForm');
-            const data = new FormData(form);
-            const jsonData = {};
-            data.forEach((value, key) => {
-                jsonData[key] = value;
-            });
+        async function enviarVenta(event) {
+            event.preventDefault();
+            const datos = {
+                fecha: document.getElementById("fecha").value,
+                cliente: document.getElementById("cliente").value,
+                telefono: document.getElementById("telefono").value,
+                producto: document.getElementById("producto").value,
+                cantidad: document.getElementById("cantidad").value,
+                precio_unitario: document.getElementById("precio_unitario").value,
+                total_usd: document.getElementById("total_usd").value,
+                metodo_pago_1: document.getElementById("metodo_pago_1").value,
+                monto_pago_1: document.getElementById("monto_pago_1").value,
+                metodo_pago_2: document.getElementById("metodo_pago_2").value,
+                monto_pago_2: document.getElementById("monto_pago_2").value,
+                tasa_bcv: document.getElementById("tasa_bcv").value,
+                abono_usd: document.getElementById("abono_usd").value,
+                restante_usd: document.getElementById("restante_usd").value,
+                asesor: document.getElementById("asesor").value,
+                comentario: document.getElementById("comentario").value
+            };
 
-            fetch("https://script.google.com/macros/s/AKfycbxpaVldshku5oRYcyAxpzmeeW6fRZ2OCg0kTiYPS2I7L0bYMoDCSLND-42jcI9yX6u-QA/exec", {
-                method: "POST",
-                body: JSON.stringify(jsonData),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById('respuesta').innerText = "✅ Venta registrada exitosamente.";
-                form.reset();
-            })
-            .catch(error => {
-                document.getElementById('respuesta').innerText = "❌ Error al registrar la venta.";
-                console.error(error);
-            });
+            const mensaje = document.getElementById("mensaje");
+            const error = document.getElementById("error");
+            mensaje.textContent = "";
+            error.textContent = "";
+
+            try {
+                const respuesta = await fetch("https://script.google.com/macros/s/AKfycbxpaVldshku5oRYcyAxpzmeeW6fRZ2OCg0kTiYPS2I7L0bYMoDCSLND-42jcI9yX6u-QA/exec", {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                mensaje.textContent = "✅ Venta registrada exitosamente.";
+            } catch (e) {
+                error.textContent = "❌ Error al registrar la venta.";
+                console.error(e);
+            }
         }
     </script>
 </body>
